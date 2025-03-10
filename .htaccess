@@ -1,0 +1,35 @@
+RewriteEngine On
+
+# Allow access to static files
+<FilesMatch "\.(html|css|js|jpg|jpeg|png|gif|ico|svg|woff|woff2|ttf|eot)$">
+    Order Allow,Deny
+    Allow from all
+</FilesMatch>
+
+# Prevent directory listing
+Options -Indexes
+
+# Enable mod_rewrite
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /admin/
+    
+    # Handle static assets in dist/assets
+    RewriteCond %{REQUEST_URI} ^/admin/assets/
+    RewriteRule ^assets/(.*)$ dist/assets/$1 [L]
+    
+    # Handle root admin path
+    RewriteCond %{REQUEST_URI} ^/admin/?$
+    RewriteRule ^(.*)$ dist/index.html [L]
+    
+    # For all other paths that don't exist as files or directories
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^(.*)$ dist/index.html [L]
+</IfModule>
+
+# Set default file permissions
+<Files *>
+    Order Allow,Deny
+    Allow from all
+</Files> 
