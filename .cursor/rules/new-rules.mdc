@@ -1,5 +1,5 @@
 ---
-description: 
+description: All future messages
 globs: *.tsx, *.ts
 alwaysApply: true
 ---
