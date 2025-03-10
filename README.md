@@ -185,4 +185,4 @@ For technical support, please contact the development team at [support@flyhelo.o
 
 ## License
 
-Copyright © 2024 HELO Aviation Services. All rights reserved. 
+Copyright © 2025 HELO Luxury Air Mobility, Inc. All rights reserved. 
