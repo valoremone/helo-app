@@ -1,50 +1,49 @@
-import { useState } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
+import { useState } from 'react';
 import * as z from 'zod';
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/components/ui/form';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
-import type { Aircraft } from '@/types/fleet';
+import { Form } from '@/components/ui/form';
+import { FormControl } from '@/components/ui/form';
+import { FormField } from '@/components/ui/form';
+import { FormItem } from '@/components/ui/form';
+import { FormLabel } from '@/components/ui/form';
+import { FormMessage } from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { Select } from '@/components/ui/select';
+import { SelectContent } from '@/components/ui/select';
+import { SelectItem } from '@/components/ui/select';
+import { SelectTrigger } from '@/components/ui/select';
+import { SelectValue } from '@/components/ui/select';
+import { Aircraft, AircraftStatus } from '@/types/fleet';
+import { Textarea } from "../ui/textarea";
 
-const aircraftFormSchema = z.object({
-  registration: z.string().min(2, 'Registration must be at least 2 characters'),
-  type: z.string().min(2, 'Type must be at least 2 characters'),
-  manufacturer: z.string().min(2, 'Manufacturer must be at least 2 characters'),
-  model: z.string().min(2, 'Model must be at least 2 characters'),
-  capacity: z.number().min(1, 'Capacity must be at least 1'),
-  baseLocation: z.string().min(3, 'Base location must be at least 3 characters'),
+const formSchema = z.object({
+  registration: z.string().min(2).max(50),
+  model: z.string().min(2).max(100),
+  manufacturer: z.string().min(2).max(100),
+  yearManufactured: z.coerce.number().min(1900).max(new Date().getFullYear()),
   status: z.enum(['available', 'in-maintenance', 'in-flight', 'reserved']),
-  totalFlightHours: z.number().min(0, 'Flight hours cannot be negative'),
-  lastMaintenance: z.string(),
-  nextMaintenance: z.string(),
+  flightHours: z.coerce.number().min(0),
+  range: z.coerce.number().min(0),
+  cruisingSpeed: z.coerce.number().min(0),
+  capacity: z.coerce.number().min(1),
+  baseLocation: z.string().min(2).max(100),
+  type: z.string().min(2).max(50),
   amenities: z.array(z.string()),
   images: z.object({
-    main: z.string().url('Main image must be a valid URL'),
-    gallery: z.array(z.string().url('Gallery images must be valid URLs')),
+    main: z.string().url(),
+    gallery: z.array(z.string().url()).optional(),
   }),
+  lastMaintenance: z.string().optional(),
+  nextMaintenance: z.string().optional(),
 });
 
-type AircraftFormValues = z.infer<typeof aircraftFormSchema>;
+type FormData = z.infer<typeof formSchema>;
 
 interface AircraftFormProps {
   initialData?: Partial<Aircraft>;
-  onSubmit: (data: AircraftFormValues) => void;
+  onSubmit: (data: FormData) => void;
   isLoading?: boolean;
 }
 
@@ -66,24 +65,27 @@ export function AircraftForm({ initialData, onSubmit, isLoading }: AircraftFormP
     initialData?.amenities || []
   );
 
-  const form = useForm<AircraftFormValues>({
-    resolver: zodResolver(aircraftFormSchema),
+  const form = useForm<FormData>({
+    resolver: zodResolver(formSchema),
     defaultValues: {
       registration: initialData?.registration || '',
-      type: initialData?.type || 'Jet',
-      manufacturer: initialData?.manufacturer || '',
       model: initialData?.model || '',
-      capacity: initialData?.capacity || 1,
+      manufacturer: initialData?.manufacturer || '',
+      yearManufactured: initialData?.yearManufactured || new Date().getFullYear(),
+      status: (initialData?.status as AircraftStatus) || 'available',
+      flightHours: initialData?.flightHours || 0,
+      range: initialData?.range || 0,
+      cruisingSpeed: initialData?.cruisingSpeed || 0,
+      capacity: initialData?.capacity || 0,
       baseLocation: initialData?.baseLocation || '',
-      status: initialData?.status || 'available',
-      totalFlightHours: initialData?.totalFlightHours || 0,
-      lastMaintenance: initialData?.lastMaintenance || new Date().toISOString().split('T')[0],
-      nextMaintenance: initialData?.nextMaintenance || new Date().toISOString().split('T')[0],
+      type: initialData?.type || 'Jet',
       amenities: initialData?.amenities || [],
       images: initialData?.images || {
-        main: '',
+        main: 'https://example.com/placeholder.jpg',
         gallery: [],
       },
+      lastMaintenance: initialData?.lastMaintenance,
+      nextMaintenance: initialData?.nextMaintenance,
     },
   });
 
@@ -99,7 +101,7 @@ export function AircraftForm({ initialData, onSubmit, isLoading }: AircraftFormP
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
         <div className="grid grid-cols-2 gap-4">
           <FormField
             control={form.control}
@@ -108,55 +110,35 @@ export function AircraftForm({ initialData, onSubmit, isLoading }: AircraftFormP
               <FormItem>
                 <FormLabel>Registration</FormLabel>
                 <FormControl>
-                  <Input placeholder="N123AB" {...field} />
+                  <Input placeholder="N12345" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
-
           <FormField
             control={form.control}
             name="type"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Type</FormLabel>
-                <Select
-                  onValueChange={field.onChange}
-                  defaultValue={field.value}
-                >
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
                   <FormControl>
                     <SelectTrigger>
                       <SelectValue placeholder="Select type" />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    {AIRCRAFT_TYPES.map((type) => (
-                      <SelectItem key={type} value={type}>
-                        {type}
-                      </SelectItem>
-                    ))}
+                    <SelectItem value="Jet">Jet</SelectItem>
+                    <SelectItem value="Turboprop">Turboprop</SelectItem>
+                    <SelectItem value="Piston">Piston</SelectItem>
+                    <SelectItem value="Helicopter">Helicopter</SelectItem>
                   </SelectContent>
                 </Select>
                 <FormMessage />
               </FormItem>
             )}
           />
-
-          <FormField
-            control={form.control}
-            name="manufacturer"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Manufacturer</FormLabel>
-                <FormControl>
-                  <Input placeholder="Manufacturer" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
           <FormField
             control={form.control}
             name="model"
@@ -164,75 +146,45 @@ export function AircraftForm({ initialData, onSubmit, isLoading }: AircraftFormP
               <FormItem>
                 <FormLabel>Model</FormLabel>
                 <FormControl>
-                  <Input placeholder="Model" {...field} />
+                  <Input placeholder="Citation X" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
-
           <FormField
             control={form.control}
-            name="capacity"
+            name="manufacturer"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Capacity (seats)</FormLabel>
+                <FormLabel>Manufacturer</FormLabel>
                 <FormControl>
-                  <Input
-                    type="number"
-                    min={1}
-                    {...field}
-                    onChange={e => field.onChange(parseInt(e.target.value))}
-                  />
+                  <Input placeholder="Cessna" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
-
           <FormField
             control={form.control}
-            name="baseLocation"
+            name="yearManufactured"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Base Location</FormLabel>
+                <FormLabel>Year Manufactured</FormLabel>
                 <FormControl>
-                  <Input placeholder="KJFK" {...field} />
+                  <Input type="number" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
-
-          <FormField
-            control={form.control}
-            name="totalFlightHours"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Total Flight Hours</FormLabel>
-                <FormControl>
-                  <Input
-                    type="number"
-                    min={0}
-                    {...field}
-                    onChange={e => field.onChange(parseInt(e.target.value))}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
           <FormField
             control={form.control}
             name="status"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Status</FormLabel>
-                <Select
-                  onValueChange={field.onChange}
-                  defaultValue={field.value}
-                >
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
                   <FormControl>
                     <SelectTrigger>
                       <SelectValue placeholder="Select status" />
@@ -249,73 +201,91 @@ export function AircraftForm({ initialData, onSubmit, isLoading }: AircraftFormP
               </FormItem>
             )}
           />
-
           <FormField
             control={form.control}
-            name="lastMaintenance"
+            name="flightHours"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Last Maintenance</FormLabel>
+                <FormLabel>Flight Hours</FormLabel>
                 <FormControl>
-                  <Input type="date" {...field} />
+                  <Input type="number" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
-
           <FormField
             control={form.control}
-            name="nextMaintenance"
+            name="range"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Next Maintenance</FormLabel>
+                <FormLabel>Range (nm)</FormLabel>
                 <FormControl>
-                  <Input type="date" {...field} />
+                  <Input type="number" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="cruisingSpeed"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Cruising Speed (kts)</FormLabel>
+                <FormControl>
+                  <Input type="number" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="capacity"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Capacity</FormLabel>
+                <FormControl>
+                  <Input type="number" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="baseLocation"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Base Location</FormLabel>
+                <FormControl>
+                  <Input placeholder="KJFK" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="images.main"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Main Image URL</FormLabel>
+                <FormControl>
+                  <Input type="url" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
         </div>
-
-        <FormField
-          control={form.control}
-          name="images.main"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Main Image URL</FormLabel>
-              <FormControl>
-                <Input placeholder="https://..." {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <div>
-          <FormLabel>Amenities</FormLabel>
-          <div className="grid grid-cols-3 gap-2 mt-2">
-            {COMMON_AMENITIES.map((amenity) => (
-              <Button
-                key={amenity}
-                type="button"
-                variant={selectedAmenities.includes(amenity) ? 'default' : 'outline'}
-                className="justify-start"
-                onClick={() => toggleAmenity(amenity)}
-              >
-                {amenity}
-              </Button>
-            ))}
-          </div>
-        </div>
-
-        <div className="flex justify-end gap-4">
+        <div className="flex justify-end">
           <Button type="submit" disabled={isLoading}>
-            {initialData ? 'Update Aircraft' : 'Add Aircraft'}
+            {isLoading ? "Saving..." : "Save Aircraft"}
           </Button>
         </div>
       </form>
     </Form>
   );
-} 
+}

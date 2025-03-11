@@ -1,60 +1,67 @@
-import { Routes, Route, Navigate } from 'react-router-dom';
-import { ROUTES } from '@/lib/constants';
-import { MemberLayout } from '@/layouts/member-layout.tsx';
-import { AdminLayout } from '@/layouts/admin-layout.tsx';
-import { LoginPage } from '@/pages/auth/login.tsx';
-import { RegisterPage } from '@/pages/auth/register.tsx';
-import { MemberDashboard } from '@/pages/member/dashboard.tsx';
-import { BookingPage } from '@/pages/member/booking.tsx';
-import { ProfilePage } from '@/pages/member/profile.tsx';
-import { AdminDashboard } from '@/pages/admin/dashboard.tsx';
-import { AdminBookings } from '@/pages/admin/bookings.tsx';
-import { AdminUsers } from '@/pages/admin/users.tsx';
-import { AdminFleet } from '@/pages/admin/fleet.tsx';
-import { AdminAnalytics } from '@/pages/admin/analytics.tsx';
+import { Route } from 'react-router-dom';
+import { Routes } from 'react-router-dom';
 import { ProtectedRoute } from '@/components/protected-route';
+import { AdminLayout } from '@/layouts/admin-layout';
+import { MemberLayout } from '@/layouts/member-layout';
+import { AdminDashboard } from '@/pages/admin/dashboard';
+import { AdminFleet } from '@/pages/admin/fleet';
+import ForgotPasswordPage from '@/pages/auth/forgot-password';
+import BookingsPage from '@/pages/bookings/BookingsListPage';
+import LoginPage from '@/pages/login';
+import { MemberDashboard } from '@/pages/member/dashboard';
+import ProfilePage from '@/pages/member/profile';
+import RegisterPage from '@/pages/register';
+import UsersPage from '@/pages/users/UsersListPage';
 
-export function AppRoutes() {
+const AppRoutes = () => {
   return (
     <Routes>
-      {/* Auth Routes */}
-      <Route path={ROUTES.LOGIN} element={<LoginPage />} />
-      <Route path={ROUTES.REGISTER} element={<RegisterPage />} />
-
-      {/* Member Routes */}
-      <Route
-        element={
-          <ProtectedRoute>
-            <MemberLayout />
-          </ProtectedRoute>
-        }
-      >
-        <Route path={ROUTES.DASHBOARD} element={<MemberDashboard />} />
-        <Route path={ROUTES.BOOKING} element={<BookingPage />} />
-        <Route path={ROUTES.PROFILE} element={<ProfilePage />} />
-      </Route>
+      {/* Public Routes */}
+      <Route path="/auth/login" element={<LoginPage />} />
+      <Route path="/auth/register" element={<RegisterPage />} />
+      <Route path="/auth/forgot-password" element={<ForgotPasswordPage />} />
 
       {/* Admin Routes */}
       <Route
-        path={ROUTES.ADMIN.ROOT}
+        path="/admin/*"
         element={
           <ProtectedRoute requiredRole="admin">
-            <AdminLayout />
+            <AdminLayout>
+              <Routes>
+                <Route path="/" element={<AdminDashboard />} />
+                <Route path="/dashboard" element={<AdminDashboard />} />
+                <Route path="/users" element={<UsersPage />} />
+                <Route path="/bookings" element={<BookingsPage />} />
+                <Route path="/fleet" element={<AdminFleet />} />
+              </Routes>
+            </AdminLayout>
           </ProtectedRoute>
         }
-      >
-        <Route path={ROUTES.ADMIN.DASHBOARD} element={<AdminDashboard />} />
-        <Route path={ROUTES.ADMIN.BOOKINGS} element={<AdminBookings />} />
-        <Route path={ROUTES.ADMIN.USERS} element={<AdminUsers />} />
-        <Route path={ROUTES.ADMIN.FLEET} element={<AdminFleet />} />
-        <Route path={ROUTES.ADMIN.ANALYTICS} element={<AdminAnalytics />} />
-      </Route>
-
-      {/* Redirect root to dashboard */}
-      <Route
-        path={ROUTES.HOME}
-        element={<Navigate to={ROUTES.LOGIN} replace />}
       />
+
+      {/* Member Routes */}
+      <Route
+        path="/member/*"
+        element={
+          <ProtectedRoute requiredRole="member">
+            <MemberLayout>
+              <Routes>
+                <Route path="/" element={<MemberDashboard />} />
+                <Route path="/dashboard" element={<MemberDashboard />} />
+                <Route path="/profile" element={<ProfilePage />} />
+                <Route path="/bookings" element={<BookingsPage />} />
+              </Routes>
+            </MemberLayout>
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Default Redirect */}
+      <Route path="*" element={<LoginPage />} />
     </Routes>
   );
-}
+};
+
+export { AppRoutes };
+
+export default AppRoutes;

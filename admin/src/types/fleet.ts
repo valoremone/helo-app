@@ -1,21 +1,29 @@
 export interface Aircraft {
   id: string;
   registration: string;
-  type: string;
-  manufacturer: string;
   model: string;
-  capacity: number;
+  manufacturer: string;
+  yearManufactured: number;
   status: 'available' | 'in-maintenance' | 'in-flight' | 'reserved';
-  lastMaintenance: string;
-  nextMaintenance: string;
-  totalFlightHours: number;
+  flightHours: number;
+  totalFlightHours?: number;
+  range: number;
+  cruisingSpeed: number;
+  capacity: number;
   baseLocation: string;
+  type: string;
   amenities: string[];
   images: {
     main: string;
-    gallery: string[];
+    gallery?: string[];
   };
+  lastMaintenance?: string;
+  nextMaintenance?: string;
+  createdAt: Date;
+  updatedAt: Date;
 }
+
+export type AircraftStatus = Aircraft['status'];
 
 export interface MaintenanceRecord {
   id: string;

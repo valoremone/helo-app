@@ -1,54 +1,41 @@
+import { Activity } from 'lucide-react';
+import { Crown } from 'lucide-react';
+import { Star } from 'lucide-react';
+import { UserPlus } from 'lucide-react';
+import { Users } from 'lucide-react';
 import { useState } from 'react';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import {
-  LineChart,
-  Line,
-  BarChart,
-  Bar,
-  PieChart,
-  Pie,
-  Cell,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-} from 'recharts';
+import { Bar } from 'recharts';
+import { BarChart } from 'recharts';
+import { CartesianGrid } from 'recharts';
+import { Cell } from 'recharts';
+import { Legend } from 'recharts';
+import { Pie } from 'recharts';
+import { PieChart } from 'recharts';
+import { ResponsiveContainer } from 'recharts';
+import { Tooltip } from 'recharts';
+import { XAxis } from 'recharts';
+import { YAxis } from 'recharts';
 import { Badge } from '@/components/ui/badge';
-import {
-  Users,
-  UserPlus,
-  Star,
-  DollarSign,
-  Crown,
-  Activity,
-} from 'lucide-react';
-import type { CustomerMetrics } from '@/types/reports';
+import { Card } from '@/components/ui/card';
+import { CardContent } from '@/components/ui/card';
+import { CardDescription } from '@/components/ui/card';
+import { CardHeader } from '@/components/ui/card';
+import { CardTitle } from '@/components/ui/card';
+import { Select } from '@/components/ui/select';
+import { SelectContent } from '@/components/ui/select';
+import { SelectItem } from '@/components/ui/select';
+import { SelectTrigger } from '@/components/ui/select';
+import { SelectValue } from '@/components/ui/select';
+import { Table } from '@/components/ui/table';
+import { TableBody } from '@/components/ui/table';
+import { TableCell } from '@/components/ui/table';
+import { TableHead } from '@/components/ui/table';
+import { TableHeader } from '@/components/ui/table';
+import { TableRow } from '@/components/ui/table';
 import { MEMBERSHIP_TIERS } from '@/lib/constants';
+import { CustomerMetrics } from '@/types/reports';
 
-// Mock data
+// Define mock metrics data
 const mockMetrics: CustomerMetrics = {
   totalCustomers: 850,
   newCustomers: 45,
@@ -316,4 +303,4 @@ export default function CustomerAnalyticsPage() {
       </Card>
     </div>
   );
-} 
+}

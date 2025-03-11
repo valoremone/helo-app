@@ -1,5 +1,5 @@
-import { BRAND } from '@/lib/constants';
 import appIcon from '@/assets/logos/HELOAppIconBlue.png';
+import { BRAND } from '@/lib/constants';
 
 interface BrandIconProps {
   className?: string;
@@ -22,4 +22,4 @@ export function BrandIcon({ className = '', size = 'md' }: BrandIconProps) {
       />
     </div>
   );
-} 
+}

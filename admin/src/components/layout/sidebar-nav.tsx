@@ -1,50 +1,38 @@
+import { Activity } from 'lucide-react';
+import { BarChart3 } from 'lucide-react';
+import { Calendar } from 'lucide-react';
+import { ChevronDown } from 'lucide-react';
+import { DollarSign } from 'lucide-react';
+import { FileText } from 'lucide-react';
+import { LayoutDashboard } from 'lucide-react';
+import { LogOut } from 'lucide-react';
+import { LucideIcon } from 'lucide-react';
+import { Menu } from 'lucide-react';
+import { PlaneTakeoff } from 'lucide-react';
+import { Settings } from 'lucide-react';
+import { User } from 'lucide-react';
+import { Users } from 'lucide-react';
+import { Wrench } from 'lucide-react';
+import { useDispatch } from 'react-redux';
+import { useSelector } from 'react-redux';
+import { Link } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { cn } from '@/lib/utils';
+import { Avatar } from '@/components/ui/avatar';
+import { AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { useAuth } from '@/components/auth-provider';
-import { useDispatch, useSelector } from 'react-redux';
+import { DropdownMenu } from '@/components/ui/dropdown-menu';
+import { DropdownMenuContent } from '@/components/ui/dropdown-menu';
+import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
+import { DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
+import { DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { useAuth } from '@/lib/auth/context';
+import { ROUTES } from '@/lib/constants';
+import { cn } from '@/lib/utils';
+import { AppDispatch } from '@/store';
 import { RootState } from '@/store';
 import { logoutAsync } from '@/store/slices/auth';
-import { ROUTES } from '@/lib/constants';
-import { AppDispatch } from '@/store';
-import {
-  ChevronDown,
-  ChevronRight,
-  PlaneTakeoff,
-  Calendar,
-  Users,
-  Settings,
-  BarChart3,
-  FileText,
-  Wrench,
-  Menu,
-  LogOut,
-  User,
-  LayoutGrid,
-  Clock,
-  MapPin,
-  CreditCard,
-  Package,
-  Bell,
-  Shield,
-  Activity,
-  Gauge,
-  LayoutDashboard,
-  DollarSign,
-  ClipboardList,
-  Crown,
-  UserPlus,
-  LucideIcon
-} from 'lucide-react';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 
 interface NavItem {
   title: string;
@@ -323,68 +311,81 @@ export function SidebarNav({ className, isCollapsed, onToggleCollapse }: Sidebar
     );
   };
 
-  return (
-    <div className={cn("flex h-full flex-col justify-between py-4", className)}>
-      <div className="flex flex-col gap-4">
-        <div className="px-3 py-2">
+  const renderSidebarContent = () => {
+    return (
+      <div className={cn("flex h-full flex-col border-r", className)}>
+        <div className="flex items-center justify-between py-4">
+          <div className="flex items-center gap-2 px-4">
+            {!isCollapsed && (
+              <span className="text-xl font-bold">HELO</span>
+            )}
+          </div>
           <Button
             variant="ghost"
-            className="w-full justify-start"
+            size="icon"
             onClick={onToggleCollapse}
+            className="mr-2"
           >
-            <Menu className="h-4 w-4" />
-            {!isCollapsed && <span className="ml-2">Menu</span>}
+            <Menu className="h-5 w-5" />
           </Button>
         </div>
-        <nav className="space-y-1 px-2">
-          {navItems.map((item) => (
-            <NavItemComponent key={item.title} item={item} />
-          ))}
-        </nav>
-      </div>
 
-      <div className="px-3 py-2 mt-auto border-t">
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              variant="ghost"
-              className="w-full justify-start"
-            >
-              <div className="flex items-center gap-2">
-                <Avatar className="h-6 w-6">
-                  <AvatarFallback>
-                    {user?.name?.charAt(0) || user?.email?.charAt(0) || 'U'}
-                  </AvatarFallback>
-                </Avatar>
-                {!isCollapsed && (
-                  <div className="flex flex-col items-start text-sm">
-                    <span className="font-medium">{user?.name || user?.email}</span>
-                    <span className="text-xs text-muted-foreground">
-                      {isAdmin ? 'Administrator' : 'User'}
-                    </span>
-                  </div>
-                )}
-              </div>
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-[200px]">
-            <DropdownMenuItem asChild>
-              <Link to="/profile" className="flex items-center">
+        {/* Nav Items */}
+        <div className="flex-1 overflow-auto py-2">
+          <nav className="grid gap-1 px-2">
+            {navItems
+              .filter(item => canViewItem(item))
+              .map(item => (
+                <NavItemComponent key={item.title} item={item} />
+              ))}
+          </nav>
+        </div>
+
+        {/* User Profile */}
+        <div className="mt-auto border-t p-2">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                className="w-full justify-start"
+              >
+                <div className="flex items-center gap-2">
+                  <Avatar className="h-6 w-6">
+                    <AvatarFallback>
+                      {user?.name?.charAt(0) || user?.email?.charAt(0) || 'U'}
+                    </AvatarFallback>
+                  </Avatar>
+                  {!isCollapsed && (
+                    <div className="flex flex-col items-start text-sm">
+                      <span className="font-medium">{user?.name || user?.email}</span>
+                      <span className="text-xs text-muted-foreground">
+                        {isAdmin ? 'Administrator' : 'User'}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56">
+              <DropdownMenuItem>
                 <User className="mr-2 h-4 w-4" />
                 Profile
-              </Link>
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem 
-              onClick={handleLogout}
-              className="text-red-600 cursor-pointer"
-            >
-              <LogOut className="mr-2 h-4 w-4" />
-              Logout
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={handleLogout}>
+                <LogOut className="mr-2 h-4 w-4" />
+                Logout
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
       </div>
+    );
+  };
+
+  return (
+    <div className={cn("flex h-full flex-col justify-between py-4", className)}>
+      {renderSidebarContent()}
     </div>
   );
-} 
+}

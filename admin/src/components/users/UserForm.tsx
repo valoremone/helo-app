@@ -1,24 +1,19 @@
-import { useState } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import * as z from 'zod';
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/components/ui/form';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { Form } from '@/components/ui/form';
+import { FormControl } from '@/components/ui/form';
+import { FormField } from '@/components/ui/form';
+import { FormItem } from '@/components/ui/form';
+import { FormLabel } from '@/components/ui/form';
+import { FormMessage } from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { Select } from '@/components/ui/select';
+import { SelectContent } from '@/components/ui/select';
+import { SelectItem } from '@/components/ui/select';
+import { SelectTrigger } from '@/components/ui/select';
+import { SelectValue } from '@/components/ui/select';
 import { MEMBERSHIP_TIERS } from '@/lib/constants';
 
 const userFormSchema = z.object({
@@ -160,4 +155,4 @@ export function UserForm({ initialData, onSubmit, isLoading }: UserFormProps) {
       </form>
     </Form>
   );
-} 
+}

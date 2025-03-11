@@ -1,12 +1,10 @@
+import { Toast } from '@/components/ui/toast';
+import { ToastClose } from '@/components/ui/toast';
+import { ToastDescription } from '@/components/ui/toast';
+import { ToastProvider } from '@/components/ui/toast';
+import { ToastTitle } from '@/components/ui/toast';
+import { ToastViewport } from '@/components/ui/toast';
 import { useToast } from '@/hooks/use-toast';
-import {
-  Toast,
-  ToastClose,
-  ToastDescription,
-  ToastProvider,
-  ToastTitle,
-  ToastViewport,
-} from '@/components/ui/toast';
 
 export function Toaster() {
   const { toasts } = useToast();

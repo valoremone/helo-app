@@ -34,4 +34,4 @@ export function AdminLayout({ children }: AdminLayoutProps) {
       </main>
     </div>
   );
-} 
+}

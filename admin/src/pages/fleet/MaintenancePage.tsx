@@ -1,25 +1,22 @@
+import { Calendar } from 'lucide-react';
+import { Search } from 'lucide-react';
 import { useState } from 'react';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
-import { Search, Plus, Calendar } from 'lucide-react';
-import type { MaintenanceRecord } from '@/types/fleet';
 import { MaintenanceForm } from '@/components/fleet/MaintenanceForm';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Dialog } from '@/components/ui/dialog';
+import { DialogContent } from '@/components/ui/dialog';
+import { DialogHeader } from '@/components/ui/dialog';
+import { DialogTitle } from '@/components/ui/dialog';
+import { DialogTrigger } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Table } from '@/components/ui/table';
+import { TableBody } from '@/components/ui/table';
+import { TableCell } from '@/components/ui/table';
+import { TableHead } from '@/components/ui/table';
+import { TableHeader } from '@/components/ui/table';
+import { TableRow } from '@/components/ui/table';
+import { MaintenanceRecord } from '@/types/fleet';
 
 // Temporary mock data
 const mockMaintenanceRecords: MaintenanceRecord[] = [
@@ -206,4 +203,4 @@ export default function MaintenancePage() {
       </Dialog>
     </div>
   );
-} 
+}

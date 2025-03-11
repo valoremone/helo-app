@@ -2,12 +2,215 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/png" href="/src/assets/logos/HELOAppIconBlue.png" />
+    <link rel="icon" type="image/png" href="/admin/assets/HELOAppIconBlue.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>HELO Demo App</title>
+    <title>HELO Admin Dashboard</title>
+    <style>
+      @keyframes spin {
+        to { transform: rotate(360deg); }
+      }
+      
+      .loading-spinner {
+        width: 50px;
+        height: 50px;
+        border: 4px solid #e5e7eb;
+        border-top-color: #4f46e5;
+        border-radius: 50%;
+        margin: 0 auto;
+        animation: spin 1s linear infinite;
+      }
+      
+      body {
+        font-family: system-ui, -apple-system, sans-serif;
+        line-height: 1.5;
+        margin: 0;
+        padding: 0;
+      }
+      
+      .button {
+        background-color: #4f46e5;
+        color: white;
+        border: none;
+        padding: 10px 15px;
+        border-radius: 4px;
+        cursor: pointer;
+        margin: 5px;
+        font-size: 14px;
+      }
+      
+      .button:hover {
+        background-color: #4338ca;
+      }
+      
+      .button.danger {
+        background-color: #dc2626;
+      }
+      
+      .button.danger:hover {
+        background-color: #b91c1c;
+      }
+      
+      .diagnostic-info {
+        margin-top: 20px;
+        padding: 10px;
+        background: #f3f4f6;
+        border-radius: 4px;
+        font-size: 12px;
+        text-align: left;
+        display: none;
+      }
+      
+      .error-message {
+        color: #dc2626;
+        background-color: #fee2e2;
+        padding: 10px;
+        border-radius: 4px;
+        margin-top: 15px;
+        display: none;
+      }
+    </style>
+    <script>
+      var startTime = new Date();
+      var loadTimers = {
+        start: startTime,
+        domContentLoaded: null,
+        windowLoaded: null
+      };
+      var loadingTimeout = null;
+      var reactStarted = false;
+      
+      console.log('[HELO Admin] Initial HTML loaded at', startTime);
+      
+      // Check if React app has started rendering
+      function checkReactStarted() {
+        const rootEl = document.getElementById('root');
+        if (rootEl && rootEl.childElementCount > 0 && rootEl.innerHTML.indexOf('HELO Admin Dashboard') === -1) {
+          reactStarted = true;
+          clearTimeout(loadingTimeout);
+          console.log('[HELO Admin] React has started rendering');
+        }
+      }
+      
+      // Detect loading timeout
+      function setupLoadingTimeout() {
+        loadingTimeout = setTimeout(function() {
+          if (!reactStarted) {
+            console.warn('[HELO Admin] Application may be stuck loading');
+            const timeoutMsg = document.getElementById('loading-timeout-message');
+            if (timeoutMsg) timeoutMsg.style.display = 'block';
+            
+            const diagnosticInfo = document.getElementById('diagnostic-info');
+            if (diagnosticInfo) diagnosticInfo.style.display = 'block';
+          }
+        }, 10000); // Show message after 10 seconds if React hasn't started
+      }
+      
+      // Create a global error container that won't interfere with React mounting
+      function showErrorMessage(message) {
+        const errorContainer = document.getElementById('error-message');
+        if (errorContainer) {
+          errorContainer.innerHTML = message;
+          errorContainer.style.display = 'block';
+        }
+      }
+      
+      // Log resource loading errors
+      window.addEventListener('error', function(e) {
+        console.error('[HELO Admin] Global error caught:', e.message, e.filename, e.lineno);
+        if (e.target && (e.target.tagName === 'SCRIPT' || e.target.tagName === 'LINK')) {
+          console.error('[HELO Admin] Resource failed to load:', e.target.src || e.target.href);
+          showErrorMessage('Failed to load resource: ' + (e.target.src || e.target.href));
+        }
+      }, true);
+      
+      // Add diagnostic information to the page
+      function updateDiagnosticInfo() {
+        var diagEl = document.getElementById('diagnostic-info');
+        if (!diagEl) return;
+        
+        var browserInfo = navigator.userAgent;
+        var timingInfo = '';
+        if (loadTimers.windowLoaded) {
+          timingInfo = 'Load time: ' + (loadTimers.windowLoaded - loadTimers.start) + 'ms';
+        }
+        
+        diagEl.innerHTML = '<strong>Browser:</strong> ' + browserInfo + '<br>' +
+                           '<strong>Timing:</strong> ' + timingInfo + '<br>' +
+                           '<strong>React Started:</strong> ' + (reactStarted ? 'Yes' : 'No') + '<br>' +
+                           '<strong>URL:</strong> ' + window.location.href;
+      }
+      
+      // Force clear any authentication data and reload
+      function clearAuthAndReload() {
+        // Clear cookies
+        document.cookie.split(';').forEach(function(cookie) {
+          var parts = cookie.trim().split('=');
+          var name = parts[0];
+          document.cookie = name + '=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+        });
+        
+        // Clear storage
+        try {
+          localStorage.clear();
+          sessionStorage.clear();
+        } catch (e) {
+          console.error('[HELO Admin] Error clearing storage:', e);
+        }
+        
+        // Hard reload
+        window.location.href = '/admin/login';
+      }
+      
+      // Log when DOM is ready
+      document.addEventListener('DOMContentLoaded', function() {
+        loadTimers.domContentLoaded = new Date();
+        console.log('[HELO Admin] DOM fully loaded after', 
+                    loadTimers.domContentLoaded - loadTimers.start, 'ms');
+        
+        // Set up the loading timeout check
+        setupLoadingTimeout();
+        
+        // Check if React has started periodically
+        setInterval(checkReactStarted, 1000);
+      });
+      
+      // Log when window is fully loaded
+      window.addEventListener('load', function() {
+        loadTimers.windowLoaded = new Date();
+        console.log('[HELO Admin] Window fully loaded after', 
+                   loadTimers.windowLoaded - loadTimers.start, 'ms');
+        updateDiagnosticInfo();
+      });
+    </script>
   </head>
   <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
+    <!-- Root element for React -->
+    <div id="root">
+      <div style="padding: 20px; text-align: center; max-width: 600px; margin: 0 auto;">
+        <h1 style="margin-bottom: 20px; color: #4f46e5;">HELO Admin Dashboard</h1>
+        <p style="margin-bottom: 10px;">If you can see this message, the basic React rendering is working correctly.</p>
+        <p style="margin-bottom: 20px;">We are troubleshooting the main application loading issues.</p>
+        
+        <div class="loading-spinner"></div>
+        
+        <div id="loading-timeout-message" style="display: none; margin-top: 30px;">
+          <p><strong>It's taking longer than expected to load the application.</strong></p>
+          <p>This might be due to authentication issues or browser storage conflicts.</p>
+          
+          <div style="margin-top: 20px;">
+            <button class="button" onclick="window.location.reload()">
+              Reload Page
+            </button>
+            <button class="button danger" onclick="clearAuthAndReload()">
+              Clear Auth Data &amp; Reload
+            </button>
+          </div>
+        </div>
+        
+        <div id="error-message" class="error-message"></div>
+        
+        <div id="diagnostic-info" class="diagnostic-info"></div>
+      </div>
+    </div>
   </body>
-</html>
+</html> 

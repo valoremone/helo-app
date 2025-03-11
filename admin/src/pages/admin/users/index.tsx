@@ -1,38 +1,54 @@
-import { useState } from 'react';
-import { User } from '@/types/admin';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
-import { Badge } from '@/components/ui/badge';
-import { MoreHorizontal, Search, UserPlus, Pencil } from 'lucide-react';
 import { format } from 'date-fns';
-import { UserForm } from '@/components/forms/user-form';
+import { MoreHorizontal } from 'lucide-react';
+import { Pencil } from 'lucide-react';
+import { Search } from 'lucide-react';
+import { UserPlus } from 'lucide-react';
+import { useState } from 'react';
 import { toast } from 'sonner';
-
+import { UserForm } from '@/components/forms/user-form';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Dialog } from '@/components/ui/dialog';
+import { DialogContent } from '@/components/ui/dialog';
+import { DialogHeader } from '@/components/ui/dialog';
+import { DialogTitle } from '@/components/ui/dialog';
+import { DialogTrigger } from '@/components/ui/dialog';
+import { DropdownMenu } from '@/components/ui/dropdown-menu';
+import { DropdownMenuContent } from '@/components/ui/dropdown-menu';
+import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
+import { DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Input } from '@/components/ui/input';
+import { Table } from '@/components/ui/table';
+import { TableBody } from '@/components/ui/table';
+import { TableCell } from '@/components/ui/table';
+import { TableHead } from '@/components/ui/table';
+import { TableHeader } from '@/components/ui/table';
+import { TableRow } from '@/components/ui/table';
+import { User } from '@/types/admin';
 // Temporary mock data - replace with actual API call
 const mockUsers: User[] = [
   {
     id: '1',
+    name: 'HELO Admin',
+    email: 'admin@flyhelo.one',
+    role: 'admin',
+    membershipTier: 'PLATINUM',
+    status: 'active',
+    createdAt: '2024-03-01T00:00:00Z',
+    lastLogin: '2024-03-09T10:30:00Z',
+  },
+  {
+    id: '2',
+    name: 'HELO Member',
+    email: 'member@flyhelo.one',
+    role: 'member',
+    membershipTier: 'ELITE',
+    status: 'active',
+    createdAt: '2024-03-05T00:00:00Z',
+    lastLogin: '2024-03-10T08:15:00Z',
+  },
+  {
+    id: '3',
     name: 'John Doe',
     email: 'john@example.com',
     role: 'member',
@@ -209,4 +225,4 @@ export function UsersPage() {
       </div>
     </div>
   );
-} 
+}

@@ -1,267 +1,186 @@
-import { useState } from 'react';
-import { Calendar, dateFnsLocalizer } from 'react-big-calendar';
-import format from 'date-fns/format';
-import parse from 'date-fns/parse';
-import startOfWeek from 'date-fns/startOfWeek';
-import getDay from 'date-fns/getDay';
-import 'react-big-calendar/lib/css/react-big-calendar.css';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+import { format } from 'date-fns';
+import { Plus } from 'lucide-react';
+import { useState, useEffect } from 'react';
 import { Badge } from '@/components/ui/badge';
-import type { Booking, BookingCalendarEvent } from '@/types/bookings';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { CardContent } from '@/components/ui/card';
+import { Dialog } from '@/components/ui/dialog';
+import { DialogContent } from '@/components/ui/dialog';
+import { DialogDescription } from '@/components/ui/dialog';
+import { DialogHeader } from '@/components/ui/dialog';
+import { DialogTitle } from '@/components/ui/dialog';
+import { mockBookings } from '@/lib/mock-data';
+import { Booking } from '@/types/bookings';
+import { Calendar, BookingCalendarEvent } from '@/components/placeholder-calendar';
 
-const locales = {
-  'en-US': require('date-fns/locale/en-US'),
-};
-
-const localizer = dateFnsLocalizer({
-  format,
-  parse,
-  startOfWeek,
-  getDay,
-  locales,
-});
-
-// Temporary mock data
-const mockBookings: Booking[] = [
-  {
-    id: '1',
-    aircraftId: '1',
-    customerId: 'cust1',
-    customerName: 'John Smith',
-    customerEmail: 'john@example.com',
-    status: 'confirmed',
-    type: 'charter',
-    passengers: 4,
-    departure: {
-      location: 'KJFK',
-      time: '2024-03-25T10:00:00Z',
-    },
-    arrival: {
-      location: 'KLAS',
-      time: '2024-03-25T13:00:00Z',
-    },
-    price: {
-      base: 15000,
-      fees: 1500,
-      total: 16500,
-      currency: 'USD',
-    },
-    paymentStatus: 'paid',
-    specialRequests: 'Catering for 4 people, vegetarian options needed',
-    createdAt: '2024-03-20T15:30:00Z',
-    updatedAt: '2024-03-20T16:00:00Z',
-  },
-  {
-    id: '2',
-    aircraftId: '2',
-    customerId: 'cust2',
-    customerName: 'Sarah Johnson',
-    customerEmail: 'sarah@example.com',
-    status: 'pending',
-    type: 'tour',
-    passengers: 6,
-    departure: {
-      location: 'KLGA',
-      time: '2024-03-26T14:00:00Z',
-    },
-    arrival: {
-      location: 'KLGA',
-      time: '2024-03-26T16:00:00Z',
-    },
-    price: {
-      base: 5000,
-      fees: 500,
-      total: 5500,
-      currency: 'USD',
-    },
-    paymentStatus: 'pending',
-    createdAt: '2024-03-21T09:00:00Z',
-    updatedAt: '2024-03-21T09:00:00Z',
-  },
-];
-
-const mockAircraft = [
-  { id: '1', registration: 'N123HE' },
-  { id: '2', registration: 'N456HE' },
-];
-
-export default function BookingsCalendarPage() {
-  const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
-
-  const getStatusColor = (status: Booking['status']) => {
-    const colors = {
-      'pending': 'bg-yellow-500 text-white',
-      'confirmed': 'bg-blue-500 text-white',
-      'in-progress': 'bg-purple-500 text-white',
-      'completed': 'bg-green-500 text-white',
-      'cancelled': 'bg-red-500 text-white',
-    };
-    return colors[status] || 'bg-gray-500 text-white';
-  };
-
-  const formatDateTime = (date: string) => {
-    return new Date(date).toLocaleString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-  };
-
-  const formatCurrency = (amount: number, currency: string = 'USD') => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency,
-    }).format(amount);
-  };
-
-  const calendarEvents: BookingCalendarEvent[] = mockBookings.map(booking => ({
+// Mock function to convert bookings to calendar events
+const convertBookingsToEvents = (bookings: typeof mockBookings): BookingCalendarEvent[] => {
+  return bookings.map(booking => ({
     id: booking.id,
-    title: `${booking.type.toUpperCase()} - ${booking.customerName}`,
+    title: `${booking.type.charAt(0).toUpperCase() + booking.type.slice(1)}: ${booking.customerName}`,
     start: new Date(booking.departure.time),
     end: new Date(booking.arrival.time),
-    resourceId: booking.aircraftId,
     status: booking.status,
-    type: booking.type,
+    customer: booking.customerName,
+    aircraft: booking.aircraftName || 'Unknown',
+    resourceId: booking.aircraftId,
+    type: booking.type
   }));
+};
 
-  const eventStyleGetter = (event: BookingCalendarEvent) => {
-    const style: React.CSSProperties = {
-      backgroundColor: event.status === 'pending' ? '#EAB308' :
-                      event.status === 'confirmed' ? '#3B82F6' :
-                      event.status === 'in-progress' ? '#9333EA' :
-                      event.status === 'completed' ? '#22C55E' :
-                      event.status === 'cancelled' ? '#EF4444' : '#6B7280',
-      color: '#FFFFFF',
-      borderRadius: '4px',
-    };
-    return { style };
-  };
+const BookingsCalendarPage: React.FC = () => {
+  const [events, setEvents] = useState<BookingCalendarEvent[]>([]);
+  const [selectedEvent, setSelectedEvent] = useState<BookingCalendarEvent | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
+
+  useEffect(() => {
+    // Get bookings from mock data
+    const bookings = mockBookings;
+    
+    // Convert bookings to calendar events
+    const calendarEvents = convertBookingsToEvents(bookings);
+    setEvents(calendarEvents);
+  }, []);
 
   const handleSelectEvent = (event: BookingCalendarEvent) => {
+    setSelectedEvent(event);
+    
+    // Find the corresponding booking
     const booking = mockBookings.find(b => b.id === event.id);
     if (booking) {
       setSelectedBooking(booking);
+      setIsModalOpen(true);
     }
   };
 
+  // Status badge component
+  const StatusBadge = ({ status }: { status: string }) => {
+    const statusColors = {
+      pending: 'bg-yellow-100 text-yellow-800',
+      confirmed: 'bg-green-100 text-green-800',
+      'in-progress': 'bg-blue-100 text-blue-800',
+      completed: 'bg-gray-100 text-gray-800',
+      cancelled: 'bg-red-100 text-red-800',
+    };
+
+    // Default to gray if status isn't in our mapping
+    const colorClass = statusColors[status as keyof typeof statusColors] || 'bg-gray-100 text-gray-800';
+
+    return (
+      <Badge 
+        className={`${colorClass} text-xs font-medium px-2 py-0.5 rounded-full`}
+      >
+        {status.charAt(0).toUpperCase() + status.slice(1)}
+      </Badge>
+    );
+  };
+
   return (
-    <div className="container mx-auto py-6 space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold">Bookings Calendar</h1>
-        <p className="text-muted-foreground">
-          View and manage flight bookings in calendar format
-        </p>
+    <div className="container mx-auto px-4 py-8">
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-2xl font-bold">Bookings Calendar</h2>
+        <Button>
+          <Plus className="mr-2 h-4 w-4" /> New Booking
+        </Button>
       </div>
 
-      <div className="h-[700px]">
-        <Calendar
-          localizer={localizer}
-          events={calendarEvents}
-          startAccessor="start"
-          endAccessor="end"
-          resources={mockAircraft}
-          resourceIdAccessor="id"
-          resourceTitleAccessor="registration"
-          views={['day', 'week', 'month', 'agenda']}
-          defaultView="week"
-          eventPropGetter={eventStyleGetter}
-          onSelectEvent={handleSelectEvent}
-          step={30}
-          timeslots={2}
-        />
-      </div>
+      <Card className="mb-6">
+        <CardContent className="p-6">
+          <div className="text-center p-8 mb-8 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+            <h3 className="text-xl font-medium mb-2">Calendar View Disabled</h3>
+            <p className="text-gray-600 dark:text-gray-300">
+              The calendar functionality has been removed as requested. Below is a simplified list of bookings.
+            </p>
+          </div>
+          
+          <div className="space-y-4">
+            {events.map(event => (
+              <div 
+                key={event.id}
+                className="p-4 border rounded-lg hover:shadow-md cursor-pointer bg-white dark:bg-gray-800"
+                onClick={() => handleSelectEvent(event)}
+              >
+                <div className="flex justify-between items-start">
+                  <h3 className="font-medium">{event.title}</h3>
+                  <StatusBadge status={event.status} />
+                </div>
+                <div className="text-sm text-gray-600 dark:text-gray-300 mt-1">
+                  {new Date(event.start).toLocaleString()} - {new Date(event.end).toLocaleString()}
+                </div>
+                <div className="mt-2 flex items-center gap-2 text-sm">
+                  <span className="text-gray-500 dark:text-gray-400">Aircraft:</span>
+                  <span>{event.aircraft}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
 
-      <Dialog open={!!selectedBooking} onOpenChange={(open) => !open && setSelectedBooking(null)}>
-        <DialogContent className="sm:max-w-[600px]">
+      {/* Event Details Dialog */}
+      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+        <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Booking Details</DialogTitle>
+            <DialogDescription>
+              View the details of the selected booking
+            </DialogDescription>
           </DialogHeader>
+          
           {selectedBooking && (
-            <div className="space-y-6">
+            <div className="space-y-4 pt-4">
               <div className="flex justify-between items-start">
-                <div>
-                  <h3 className="font-semibold text-lg">#{selectedBooking.id}</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Created on {formatDateTime(selectedBooking.createdAt)}
-                  </p>
-                </div>
-                <Badge className={getStatusColor(selectedBooking.status)}>
-                  {selectedBooking.status}
-                </Badge>
+                <h3 className="text-lg font-medium">{selectedBooking.type.charAt(0).toUpperCase() + selectedBooking.type.slice(1)} Flight</h3>
+                <StatusBadge status={selectedBooking.status} />
               </div>
-
+              
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <h4 className="font-semibold mb-2">Customer Information</h4>
-                  <div className="space-y-1">
-                    <p>{selectedBooking.customerName}</p>
-                    <p className="text-sm text-muted-foreground">
-                      {selectedBooking.customerEmail}
-                    </p>
-                  </div>
+                  <p className="text-sm text-gray-500">Customer</p>
+                  <p className="font-medium">{selectedBooking.customerName}</p>
+                  <p className="text-sm">{selectedBooking.customerEmail}</p>
                 </div>
-
                 <div>
-                  <h4 className="font-semibold mb-2">Flight Details</h4>
-                  <div className="space-y-1">
-                    <p className="capitalize">{selectedBooking.type}</p>
-                    <p className="text-sm text-muted-foreground">
-                      {selectedBooking.passengers} passengers
-                    </p>
-                  </div>
+                  <p className="text-sm text-gray-500">Aircraft</p>
+                  <p className="font-medium">{selectedBooking.aircraftName}</p>
+                  <p className="text-sm">{selectedBooking.passengers} passengers</p>
                 </div>
-
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <h4 className="font-semibold mb-2">Departure</h4>
-                  <div className="space-y-1">
-                    <p>{selectedBooking.departure.location}</p>
-                    <p className="text-sm text-muted-foreground">
-                      {formatDateTime(selectedBooking.departure.time)}
-                    </p>
-                  </div>
+                  <p className="text-sm text-gray-500">Departure</p>
+                  <p className="font-medium">{selectedBooking.departure.location}</p>
+                  <p className="text-sm">{format(new Date(selectedBooking.departure.time), 'PPP p')}</p>
                 </div>
-
                 <div>
-                  <h4 className="font-semibold mb-2">Arrival</h4>
-                  <div className="space-y-1">
-                    <p>{selectedBooking.arrival.location}</p>
-                    <p className="text-sm text-muted-foreground">
-                      {formatDateTime(selectedBooking.arrival.time)}
-                    </p>
-                  </div>
+                  <p className="text-sm text-gray-500">Arrival</p>
+                  <p className="font-medium">{selectedBooking.arrival.location}</p>
+                  <p className="text-sm">{format(new Date(selectedBooking.arrival.time), 'PPP p')}</p>
                 </div>
-
-                <div className="col-span-2">
-                  <h4 className="font-semibold mb-2">Payment Information</h4>
-                  <div className="space-y-2">
-                    <div className="flex justify-between">
-                      <span>Total</span>
-                      <span>{formatCurrency(selectedBooking.price.total)}</span>
-                    </div>
-                    <div className="flex justify-between items-center pt-2 border-t">
-                      <span>Payment Status</span>
-                      <Badge variant={selectedBooking.paymentStatus === 'paid' ? 'default' : 'secondary'}>
-                        {selectedBooking.paymentStatus}
-                      </Badge>
-                    </div>
-                  </div>
+              </div>
+              
+              <div className="border-t pt-4">
+                <p className="text-sm text-gray-500">Price</p>
+                <p className="text-xl font-bold">${selectedBooking.price.toLocaleString()}</p>
+                <p className="text-sm">
+                  Payment Status: 
+                  <Badge className="ml-2">{selectedBooking.paymentStatus}</Badge>
+                </p>
+              </div>
+              
+              {selectedBooking.notes && (
+                <div className="border-t pt-4">
+                  <p className="text-sm text-gray-500">Notes</p>
+                  <p className="text-sm mt-1">{selectedBooking.notes}</p>
                 </div>
-
-                {selectedBooking.specialRequests && (
-                  <div className="col-span-2">
-                    <h4 className="font-semibold mb-2">Special Requests</h4>
-                    <p className="text-sm text-muted-foreground">
-                      {selectedBooking.specialRequests}
-                    </p>
-                  </div>
-                )}
+              )}
+              
+              <div className="flex justify-end gap-3 pt-4">
+                <Button variant="outline">Edit</Button>
+                <Button>View Details</Button>
               </div>
             </div>
           )}
@@ -269,4 +188,6 @@ export default function BookingsCalendarPage() {
       </Dialog>
     </div>
   );
-} 
+};
+
+export default BookingsCalendarPage;

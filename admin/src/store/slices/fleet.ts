@@ -1,4 +1,5 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { createSlice } from '@reduxjs/toolkit';
+import { PayloadAction } from '@reduxjs/toolkit';
 
 interface Vehicle {
   id: string;
@@ -49,4 +50,5 @@ const fleetSlice = createSlice({
 
 export const { setVehicles, updateVehicle, setLoading, setError } =
   fleetSlice.actions;
+
 export const fleetReducer = fleetSlice.reducer;

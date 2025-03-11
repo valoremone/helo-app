@@ -1,31 +1,19 @@
-import { BRAND } from '@/lib/constants';
-import { useTheme } from 'next-themes';
-import darkLogo from '@/assets/logos/HELO-full-logo-dark.svg';
-import lightLogo from '@/assets/logos/HELO-full-logo-light.svg';
+import { useTheme } from '@/components/theme-provider';
+import { Plane } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface BrandLogoProps {
   className?: string;
-  size?: 'sm' | 'md' | 'lg';
 }
 
-export function BrandLogo({ className = '', size = 'md' }: BrandLogoProps) {
+export function BrandLogo({ className }: BrandLogoProps) {
   const { theme } = useTheme();
-  
-  const sizeClasses = {
-    sm: 'h-8',
-    md: 'h-12',
-    lg: 'h-20'
-  };
-  
-  const logoSrc = theme === 'dark' ? lightLogo : darkLogo;
-  
+  const isDark = theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+
   return (
-    <div className={`flex flex-col items-center ${className}`}>
-      <img 
-        src={logoSrc} 
-        alt={`${BRAND.name} - ${BRAND.description}`} 
-        className={`${sizeClasses[size]} object-contain`}
-      />
+    <div className={cn("flex items-center gap-2", className)}>
+      <Plane className={`h-6 w-6 ${isDark ? 'text-white' : 'text-black'}`} />
+      <span className="font-bold text-xl">HELO</span>
     </div>
   );
 }
