@@ -1,4 +1,5 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { createSlice } from '@reduxjs/toolkit';
+import { PayloadAction } from '@reduxjs/toolkit';
 
 interface Location {
   id: string;
@@ -76,4 +77,5 @@ export const {
   setLoading,
   setError,
 } = bookingSlice.actions;
+
 export const bookingReducer = bookingSlice.reducer;

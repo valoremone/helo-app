@@ -1,36 +1,41 @@
-import { ReactNode } from 'react';
-import { Navigate, useLocation } from 'react-router-dom';
-import { useAuth } from '@/components/auth-provider';
-import { ROUTES } from '@/lib/constants';
-import { Spinner } from '@/components/ui/spinner';
+import { Navigate } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
+import React from 'react';
+import { useAuth } from '@/lib/auth/context';
 
 interface ProtectedRouteProps {
-  children: ReactNode;
-  requiredRole?: string;
+  children: React.ReactNode;
+  requiredRole?: 'admin' | 'member';
 }
 
-export function ProtectedRoute({ children, requiredRole }: ProtectedRouteProps) {
-  const { isAuthenticated, isAdmin, checkingAuth } = useAuth();
+export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, requiredRole }) => {
+  const { user, isAuthenticated, isLoading } = useAuth();
   const location = useLocation();
 
-  if (checkingAuth) {
+  if (isLoading) {
+    // Return a loading spinner or placeholder
     return (
-      <div className="flex items-center justify-center h-screen">
-        <Spinner className="h-8 w-8" />
-        <span className="ml-2">Verifying authentication...</span>
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="h-10 w-10 animate-spin rounded-full border-b-2 border-primary"></div>
       </div>
     );
   }
 
   if (!isAuthenticated) {
-    // Redirect them to the login page, but save where they were trying to go
-    return <Navigate to={ROUTES.LOGIN} state={{ from: location }} replace />;
+    // Redirect to login page if not authenticated
+    return <Navigate to="/auth/login" state={{ from: location }} replace />;
   }
 
-  if (requiredRole === 'admin' && !isAdmin) {
-    // If they need to be an admin but aren't, redirect to the dashboard
-    return <Navigate to={ROUTES.DASHBOARD} replace />;
+  if (requiredRole && user?.role !== requiredRole) {
+    // Redirect to appropriate dashboard if role doesn't match
+    const redirectPath = user?.role === 'admin' ? '/admin/dashboard' : '/member/dashboard';
+    return <Navigate to={redirectPath} replace />;
   }
 
   return <>{children}</>;
-}
+};
+
+// Example usage:
+// <ProtectedRoute requiredRole="admin">
+//   <AdminDashboard />
+// </ProtectedRoute>

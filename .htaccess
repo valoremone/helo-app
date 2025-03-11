@@ -1,35 +1,21 @@
 RewriteEngine On
+RewriteBase /admin/
 
-# Allow access to static files
-<FilesMatch "\.(html|css|js|jpg|jpeg|png|gif|ico|svg|woff|woff2|ttf|eot)$">
-    Order Allow,Deny
-    Allow from all
-</FilesMatch>
+# Allow direct access to existing files
+RewriteCond %{REQUEST_FILENAME} -f [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]
 
-# Prevent directory listing
-Options -Indexes
+# SPA routing - redirect all requests to index.html
+RewriteRule ^ index.html [L]
 
-# Enable mod_rewrite
-<IfModule mod_rewrite.c>
-    RewriteEngine On
-    RewriteBase /admin/
-    
-    # Handle static assets in dist/assets
-    RewriteCond %{REQUEST_URI} ^/admin/assets/
-    RewriteRule ^assets/(.*)$ dist/assets/$1 [L]
-    
-    # Handle root admin path
-    RewriteCond %{REQUEST_URI} ^/admin/?$
-    RewriteRule ^(.*)$ dist/index.html [L]
-    
-    # For all other paths that don't exist as files or directories
-    RewriteCond %{REQUEST_FILENAME} !-f
-    RewriteCond %{REQUEST_FILENAME} !-d
-    RewriteRule ^(.*)$ dist/index.html [L]
-</IfModule>
+# CORS headers
+Header set Access-Control-Allow-Origin "*"
+Header set Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS"
+Header set Access-Control-Allow-Headers "Content-Type, Authorization"
 
-# Set default file permissions
-<Files *>
-    Order Allow,Deny
-    Allow from all
-</Files> 
+# Security headers
+Header set X-Content-Type-Options "nosniff"
+Header set X-Frame-Options "SAMEORIGIN"
+Header set X-XSS-Protection "1; mode=block"
+Header set Referrer-Policy "strict-origin-when-cross-origin" 

@@ -1,26 +1,21 @@
-import { useState } from 'react';
-import { User } from '@/types/admin';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/components/ui/form';
-import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
 import * as z from 'zod';
+import { Button } from '@/components/ui/button';
+import { Form } from '@/components/ui/form';
+import { FormControl } from '@/components/ui/form';
+import { FormField } from '@/components/ui/form';
+import { FormItem } from '@/components/ui/form';
+import { FormLabel } from '@/components/ui/form';
+import { FormMessage } from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { Select } from '@/components/ui/select';
+import { SelectContent } from '@/components/ui/select';
+import { SelectItem } from '@/components/ui/select';
+import { SelectTrigger } from '@/components/ui/select';
+import { SelectValue } from '@/components/ui/select';
 import { MEMBERSHIP_TIERS } from '@/lib/constants';
+import { User } from '@/types/admin';
 
 const userFormSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
@@ -171,4 +166,4 @@ export function UserForm({ user, onSubmit, onCancel }: UserFormProps) {
       </form>
     </Form>
   );
-} 
+}

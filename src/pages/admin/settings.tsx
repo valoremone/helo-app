@@ -1,10 +1,16 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { CardContent } from '@/components/ui/card';
+import { CardDescription } from '@/components/ui/card';
+import { CardHeader } from '@/components/ui/card';
+import { CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Bell, Mail, Shield, Globe, Database } from 'lucide-react';
+import { Tabs } from '@/components/ui/tabs';
+import { TabsContent } from '@/components/ui/tabs';
+import { TabsList } from '@/components/ui/tabs';
+import { TabsTrigger } from '@/components/ui/tabs';
 
 export function AdminSettings() {
   return (
@@ -192,4 +198,4 @@ export function AdminSettings() {
       </Tabs>
     </div>
   );
-} 
+}

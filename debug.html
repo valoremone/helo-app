@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Debug Page</title>
+    <style>
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+        padding: 20px;
+        max-width: 800px;
+        margin: 0 auto;
+        line-height: 1.5;
+      }
+      pre {
+        background-color: #f5f5f5;
+        padding: 10px;
+        border-radius: 4px;
+        overflow: auto;
+      }
+      #error-container {
+        color: red;
+        font-weight: bold;
+        border: 1px solid #f88;
+        background-color: #fee;
+        padding: 10px;
+        margin-top: 20px;
+        border-radius: 4px;
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>HELO Admin Debug Page</h1>
+    <p>This page is designed to help debug issues with the main app.</p>
+    
+    <div id="root"></div>
+    
+    <div id="error-container"></div>
+    
+    <script>
+      window.onerror = function(message, source, lineno, colno, error) {
+        console.error('Caught error:', message, source, lineno, colno, error);
+        var errorContainer = document.getElementById('error-container');
+        errorContainer.style.display = 'block';
+        errorContainer.innerHTML = '<h3>JavaScript Error Caught</h3>' +
+          '<p><strong>Message:</strong> ' + message + '</p>' +
+          '<p><strong>Source:</strong> ' + source + '</p>' +
+          '<p><strong>Line:</strong> ' + lineno + ', <strong>Column:</strong> ' + colno + '</p>' +
+          (error && error.stack ? '<pre>' + error.stack + '</pre>' : '');
+        return true;
+      };
+      
+      // Load the same JS file but with a different root element
+      document.addEventListener('DOMContentLoaded', function() {
+        console.log('DOM loaded, attempting to render React app');
+        try {
+          // Load the main JS file
+          var script = document.createElement('script');
+          script.src = '/admin/assets/index-CtWOLI8z.js';
+          script.type = 'module';
+          script.crossOrigin = '';
+          script.onerror = function(e) {
+            console.error('Script load error:', e);
+            var errorContainer = document.getElementById('error-container');
+            errorContainer.style.display = 'block';
+            errorContainer.innerHTML = '<h3>Script Load Error</h3>' +
+              '<p>Failed to load the main JavaScript file.</p>';
+          };
+          document.body.appendChild(script);
+        } catch (error) {
+          console.error('Error setting up app:', error);
+        }
+      });
+    </script>
+  </body>
+</html> 

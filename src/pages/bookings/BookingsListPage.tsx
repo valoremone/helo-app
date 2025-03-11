@@ -1,120 +1,48 @@
+import { Clock } from 'lucide-react';
+import { Mail } from 'lucide-react';
+import { MapPin } from 'lucide-react';
+import { MoreHorizontal } from 'lucide-react';
+import { Search } from 'lucide-react';
+import { Users } from 'lucide-react';
 import { useState } from 'react';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
-import {
-  Search,
-  Calendar,
-  MoreHorizontal,
-  Mail,
-  Phone,
-  Clock,
-  DollarSign,
-  Users,
-  MapPin,
-} from 'lucide-react';
-import type { Booking, BookingStats } from '@/types/bookings';
-
-// Temporary mock data
-const mockBookings: Booking[] = [
-  {
-    id: '1',
-    aircraftId: '1',
-    customerId: 'cust1',
-    customerName: 'John Smith',
-    customerEmail: 'john@example.com',
-    status: 'confirmed',
-    type: 'charter',
-    passengers: 4,
-    departure: {
-      location: 'KJFK',
-      time: '2024-03-25T10:00:00Z',
-    },
-    arrival: {
-      location: 'KLAS',
-      time: '2024-03-25T13:00:00Z',
-    },
-    price: {
-      base: 15000,
-      fees: 1500,
-      total: 16500,
-      currency: 'USD',
-    },
-    paymentStatus: 'paid',
-    specialRequests: 'Catering for 4 people, vegetarian options needed',
-    createdAt: '2024-03-20T15:30:00Z',
-    updatedAt: '2024-03-20T16:00:00Z',
-  },
-  {
-    id: '2',
-    aircraftId: '2',
-    customerId: 'cust2',
-    customerName: 'Sarah Johnson',
-    customerEmail: 'sarah@example.com',
-    status: 'pending',
-    type: 'tour',
-    passengers: 6,
-    departure: {
-      location: 'KLGA',
-      time: '2024-03-26T14:00:00Z',
-    },
-    arrival: {
-      location: 'KLGA',
-      time: '2024-03-26T16:00:00Z',
-    },
-    price: {
-      base: 5000,
-      fees: 500,
-      total: 5500,
-      currency: 'USD',
-    },
-    paymentStatus: 'pending',
-    createdAt: '2024-03-21T09:00:00Z',
-    updatedAt: '2024-03-21T09:00:00Z',
-  },
-];
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { CardContent } from '@/components/ui/card';
+import { CardHeader } from '@/components/ui/card';
+import { CardTitle } from '@/components/ui/card';
+import { Dialog } from '@/components/ui/dialog';
+import { DialogContent } from '@/components/ui/dialog';
+import { DialogHeader } from '@/components/ui/dialog';
+import { DialogTitle } from '@/components/ui/dialog';
+import { DropdownMenu } from '@/components/ui/dropdown-menu';
+import { DropdownMenuContent } from '@/components/ui/dropdown-menu';
+import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
+import { DropdownMenuLabel } from '@/components/ui/dropdown-menu';
+import { DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
+import { DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Input } from '@/components/ui/input';
+import { Table } from '@/components/ui/table';
+import { TableBody } from '@/components/ui/table';
+import { TableCell } from '@/components/ui/table';
+import { TableHead } from '@/components/ui/table';
+import { TableHeader } from '@/components/ui/table';
+import { TableRow } from '@/components/ui/table';
+import { mockBookings } from '@/lib/mock-data';
+import { Booking } from '@/types/bookings';
+import { BookingStats } from '@/types/bookings';
 
 const mockStats: BookingStats = {
-  total: 125,
-  pending: 15,
-  confirmed: 45,
-  completed: 60,
-  cancelled: 5,
+  total: 24,
+  pending: 5,
+  confirmed: 10,
+  completed: 7,
+  cancelled: 2,
   revenue: {
-    total: 875000,
-    pending: 125000,
-    received: 700000,
-    refunded: 50000,
+    total: 350000,
+    pending: 85000,
+    received: 245000,
+    refunded: 20000,
     currency: 'USD',
   },
 };
@@ -168,6 +96,27 @@ export default function BookingsListPage() {
     }).format(amount);
   };
 
+  const handleDeleteBooking = (id: string) => {
+    const updatedBookings = bookings.filter((booking) => booking.id !== id);
+    setBookings(updatedBookings);
+  };
+
+  const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value.toLowerCase();
+    
+    if (value === '') {
+      setBookings(mockBookings);
+    } else {
+      const filtered = mockBookings.filter((booking) => 
+        booking.customerName.toLowerCase().includes(value) || 
+        booking.id.toLowerCase().includes(value) ||
+        booking.type.toLowerCase().includes(value) ||
+        booking.status.toLowerCase().includes(value)
+      );
+      setBookings(filtered);
+    }
+  };
+
   return (
     <div className="container mx-auto py-6 space-y-6">
       <div className="flex justify-between items-start">
@@ -177,10 +126,6 @@ export default function BookingsListPage() {
             Manage and track all flight bookings
           </p>
         </div>
-        <Button>
-          <Calendar className="h-4 w-4 mr-2" />
-          View Calendar
-        </Button>
       </div>
 
       <div className="grid grid-cols-5 gap-4">
@@ -234,7 +179,7 @@ export default function BookingsListPage() {
           <Input
             placeholder="Search bookings..."
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={handleFilterChange}
             className="pl-10"
           />
         </div>
@@ -288,9 +233,7 @@ export default function BookingsListPage() {
                     {booking.paymentStatus}
                   </Badge>
                 </TableCell>
-                <TableCell>
-                  {formatCurrency(booking.price.total, booking.price.currency)}
-                </TableCell>
+                <TableCell className="font-medium">{formatCurrency(booking.price)}</TableCell>
                 <TableCell>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
@@ -310,16 +253,9 @@ export default function BookingsListPage() {
                       <DropdownMenuSeparator />
                       <DropdownMenuItem
                         className="text-red-600"
-                        onClick={() => {
-                          const updatedBookings = bookings.map(b =>
-                            b.id === booking.id
-                              ? { ...b, status: b.status === 'pending' ? 'confirmed' : 'pending' }
-                              : b
-                          );
-                          setBookings(updatedBookings);
-                        }}
+                        onClick={() => handleDeleteBooking(booking.id)}
                       >
-                        {booking.status === 'pending' ? 'Confirm Booking' : 'Mark as Pending'}
+                        Delete
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
@@ -402,17 +338,9 @@ export default function BookingsListPage() {
                 <div className="col-span-2">
                   <h4 className="font-semibold mb-2">Payment Information</h4>
                   <div className="space-y-2">
-                    <div className="flex justify-between">
-                      <span>Base Price</span>
-                      <span>{formatCurrency(selectedBooking.price.base)}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Fees</span>
-                      <span>{formatCurrency(selectedBooking.price.fees)}</span>
-                    </div>
-                    <div className="flex justify-between font-semibold">
-                      <span>Total</span>
-                      <span>{formatCurrency(selectedBooking.price.total)}</span>
+                    <div className="flex justify-between py-2 border-t border-gray-200 mt-2 pt-3">
+                      <span className="font-medium">Total Price:</span>
+                      <span>{formatCurrency(selectedBooking.price)}</span>
                     </div>
                     <div className="flex justify-between items-center pt-2 border-t">
                       <span>Payment Status</span>
@@ -423,11 +351,21 @@ export default function BookingsListPage() {
                   </div>
                 </div>
 
-                {selectedBooking.specialRequests && (
-                  <div className="col-span-2">
-                    <h4 className="font-semibold mb-2">Special Requests</h4>
+                <div className="col-span-2">
+                  <h4 className="font-semibold mb-2">Price</h4>
+                  <div className="space-y-1">
+                    <div className="flex justify-between">
+                      <span>Total</span>
+                      <span>{formatCurrency(selectedBooking.price)}</span>
+                    </div>
+                  </div>
+                </div>
+
+                {selectedBooking.notes && (
+                  <div className="col-span-2 mt-4">
+                    <h4 className="font-semibold mb-2">Notes</h4>
                     <p className="text-sm text-muted-foreground">
-                      {selectedBooking.specialRequests}
+                      {selectedBooking.notes}
                     </p>
                   </div>
                 )}
@@ -438,4 +376,4 @@ export default function BookingsListPage() {
       </Dialog>
     </div>
   );
-} 
+}

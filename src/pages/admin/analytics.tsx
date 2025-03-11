@@ -1,5 +1,14 @@
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { CartesianGrid } from 'recharts';
+import { Line } from 'recharts';
+import { LineChart } from 'recharts';
+import { ResponsiveContainer } from 'recharts';
+import { Tooltip } from 'recharts';
+import { XAxis } from 'recharts';
+import { YAxis } from 'recharts';
+import { Card } from '@/components/ui/card';
+import { CardContent } from '@/components/ui/card';
+import { CardHeader } from '@/components/ui/card';
+import { CardTitle } from '@/components/ui/card';
 
 interface AdminAnalyticsProps {
   type?: 'flights' | 'financial' | 'maintenance';

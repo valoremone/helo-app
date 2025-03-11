@@ -1,5 +1,11 @@
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Users, Plane, DollarSign, Calendar } from 'lucide-react';
+import { Calendar } from 'lucide-react';
+import { DollarSign } from 'lucide-react';
+import { Plane } from 'lucide-react';
+import { Users } from 'lucide-react';
+import { Card } from '@/components/ui/card';
+import { CardContent } from '@/components/ui/card';
+import { CardHeader } from '@/components/ui/card';
+import { CardTitle } from '@/components/ui/card';
 
 export function AdminDashboard() {
   return (

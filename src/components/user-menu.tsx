@@ -1,19 +1,20 @@
-import { useState } from 'react';
+import { useDispatch } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { useDispatch, useSelector } from 'react-redux';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Button } from '@/components/ui/button';
-import { ROUTES } from '@/lib/constants';
-import { logoutAsync } from '@/store/slices/auth';
-import { RootState, AppDispatch } from '@/store';
+import { useState } from 'react';
 import { BrandIcon } from '@/components/brand-icon';
+import { Avatar } from '@/components/ui/avatar';
+import { AvatarFallback } from '@/components/ui/avatar';
+import { Button } from '@/components/ui/button';
+import { DropdownMenu } from '@/components/ui/dropdown-menu';
+import { DropdownMenuContent } from '@/components/ui/dropdown-menu';
+import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
+import { DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
+import { DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { ROUTES } from '@/lib/constants';
+import { AppDispatch } from '@/store';
+import { RootState } from '@/store';
+import { logoutAsync } from '@/store/slices/auth';
 
 export function UserMenu() {
   const navigate = useNavigate();

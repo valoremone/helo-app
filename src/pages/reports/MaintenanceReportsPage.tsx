@@ -1,48 +1,35 @@
+import { Calendar } from 'lucide-react';
+import { DollarSign } from 'lucide-react';
+import { Timer } from 'lucide-react';
+import { Wrench } from 'lucide-react';
 import { useState } from 'react';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import {
-  LineChart,
-  Line,
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-} from 'recharts';
-import { Badge } from '@/components/ui/badge';
-import {
-  Wrench,
-  Calendar,
-  Clock,
-  AlertTriangle,
-  DollarSign,
-  Timer,
-} from 'lucide-react';
-import type { MaintenanceMetrics } from '@/types/reports';
+import { Bar } from 'recharts';
+import { BarChart } from 'recharts';
+import { CartesianGrid } from 'recharts';
+import { Legend } from 'recharts';
+import { Line } from 'recharts';
+import { LineChart } from 'recharts';
+import { ResponsiveContainer } from 'recharts';
+import { Tooltip } from 'recharts';
+import { XAxis } from 'recharts';
+import { YAxis } from 'recharts';
+import { Card } from '@/components/ui/card';
+import { CardContent } from '@/components/ui/card';
+import { CardDescription } from '@/components/ui/card';
+import { CardHeader } from '@/components/ui/card';
+import { CardTitle } from '@/components/ui/card';
+import { Select } from '@/components/ui/select';
+import { SelectContent } from '@/components/ui/select';
+import { SelectItem } from '@/components/ui/select';
+import { SelectTrigger } from '@/components/ui/select';
+import { SelectValue } from '@/components/ui/select';
+import { Table } from '@/components/ui/table';
+import { TableBody } from '@/components/ui/table';
+import { TableCell } from '@/components/ui/table';
+import { TableHead } from '@/components/ui/table';
+import { TableHeader } from '@/components/ui/table';
+import { TableRow } from '@/components/ui/table';
+import { MaintenanceMetrics } from '@/types/reports';
 
 // Mock data
 const mockMetrics: MaintenanceMetrics = {
@@ -318,4 +305,4 @@ export default function MaintenanceReportsPage() {
       </div>
     </div>
   );
-} 
+}

@@ -1,65 +1,83 @@
+import { MoreHorizontal, Search, UserPlus } from 'lucide-react';
 import { useState } from 'react';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-import {
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { 
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
-  DropdownMenuTrigger,
+  DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
-import { Badge } from '@/components/ui/badge';
-import { MEMBERSHIP_TIERS } from '@/lib/constants';
-import { MoreHorizontal, Plus, Search, UserPlus } from 'lucide-react';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { UserForm } from '@/components/users/UserForm';
+import { MEMBERSHIP_TIERS } from '@/lib/constants';
 
 interface User {
   id: string;
   name: string;
   email: string;
-  role: string;
+  role: 'admin' | 'member';
   membershipTier: keyof typeof MEMBERSHIP_TIERS;
   status: 'active' | 'inactive';
-  lastActive: string;
+  createdAt: Date;
+  lastLogin: Date;
 }
 
 // Temporary mock data
 const mockUsers: User[] = [
   {
     id: '1',
-    name: 'John Doe',
-    email: 'john@example.com',
-    role: 'member',
-    membershipTier: 'STANDARD',
-    status: 'active',
-    lastActive: '2024-03-20T10:00:00Z',
-  },
-  {
-    id: '2',
-    name: 'Jane Smith',
-    email: 'jane@example.com',
+    name: 'HELO Admin',
+    email: 'admin@flyhelo.one',
     role: 'admin',
     membershipTier: 'PLATINUM',
     status: 'active',
-    lastActive: '2024-03-20T09:30:00Z',
+    createdAt: new Date('2024-03-01'),
+    lastLogin: new Date('2024-03-10T12:00:00'),
+  },
+  {
+    id: '2',
+    name: 'HELO Member',
+    email: 'member@flyhelo.one',
+    role: 'member',
+    membershipTier: 'ELITE',
+    status: 'active',
+    createdAt: new Date('2024-03-05'),
+    lastLogin: new Date('2024-03-10T09:00:00'),
+  },
+  {
+    id: '3',
+    name: 'Jane Smith',
+    email: 'jane@example.com',
+    role: 'member',
+    membershipTier: 'STANDARD',
+    status: 'active',
+    createdAt: new Date('2024-01-15'),
+    lastLogin: new Date('2024-03-09'),
+  },
+  {
+    id: '4',
+    name: 'Robert Johnson',
+    email: 'robert@example.com',
+    role: 'member',
+    membershipTier: 'ELITE',
+    status: 'inactive',
+    createdAt: new Date('2023-11-20'),
+    lastLogin: new Date('2024-02-10'),
   },
 ];
+
+export interface UserFormValues {
+  name: string;
+  role: 'admin' | 'member';
+  email: string;
+  membershipTier: keyof typeof MEMBERSHIP_TIERS;
+  password?: string;
+}
 
 export default function UsersListPage() {
   const [users, setUsers] = useState<User[]>(mockUsers);
@@ -82,14 +100,15 @@ export default function UsersListPage() {
     return colors[tier] || 'bg-gray-600 text-white';
   };
 
-  const handleAddUser = async (data: any) => {
+  const handleAddUser = async (data: UserFormValues) => {
     try {
       // TODO: Replace with actual API call
-      const newUser = {
+      const newUser: User = {
         id: String(users.length + 1),
         ...data,
         status: 'active',
-        lastActive: new Date().toISOString(),
+        createdAt: new Date(),
+        lastLogin: new Date(),
       };
       setUsers([...users, newUser]);
       setIsAddingUser(false);
@@ -98,17 +117,24 @@ export default function UsersListPage() {
     }
   };
 
-  const handleEditUser = async (data: any) => {
+  const handleEditUser = async (data: UserFormValues) => {
     try {
       // TODO: Replace with actual API call
-      const updatedUsers = users.map(user =>
-        user.id === selectedUser?.id ? { ...user, ...data } : user
+      const updatedUsers = users.map(user => 
+        user.id === selectedUser?.id ? { ...user, ...data } as User : user
       );
       setUsers(updatedUsers);
       setSelectedUser(null);
     } catch (error) {
       console.error('Failed to update user:', error);
     }
+  };
+
+  const handleToggleUserStatus = (userId: string) => {
+    const updatedUsers = users.map(user =>
+      user.id === userId ? { ...user, status: user.status === 'active' ? 'inactive' : 'active' } as User : user
+    );
+    setUsers(updatedUsers);
   };
 
   return (
@@ -152,7 +178,8 @@ export default function UsersListPage() {
               <TableHead>Role</TableHead>
               <TableHead>Membership</TableHead>
               <TableHead>Status</TableHead>
-              <TableHead>Last Active</TableHead>
+              <TableHead>Created At</TableHead>
+              <TableHead>Last Login</TableHead>
               <TableHead className="w-[50px]"></TableHead>
             </TableRow>
           </TableHeader>
@@ -173,7 +200,10 @@ export default function UsersListPage() {
                   </Badge>
                 </TableCell>
                 <TableCell>
-                  {new Date(user.lastActive).toLocaleDateString()}
+                  {user.createdAt.toLocaleDateString()}
+                </TableCell>
+                <TableCell>
+                  {user.lastLogin.toLocaleDateString()}
                 </TableCell>
                 <TableCell>
                   <DropdownMenu>
@@ -190,12 +220,7 @@ export default function UsersListPage() {
                       <DropdownMenuSeparator />
                       <DropdownMenuItem
                         className="text-red-600"
-                        onClick={() => {
-                          const updatedUsers = users.map(u =>
-                            u.id === user.id ? { ...u, status: u.status === 'active' ? 'inactive' : 'active' } : u
-                          );
-                          setUsers(updatedUsers);
-                        }}
+                        onClick={() => handleToggleUserStatus(user.id)}
                       >
                         {user.status === 'active' ? 'Disable' : 'Enable'} Account
                       </DropdownMenuItem>
@@ -223,4 +248,4 @@ export default function UsersListPage() {
       </Dialog>
     </div>
   );
-} 
+}

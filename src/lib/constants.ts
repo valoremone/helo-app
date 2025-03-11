@@ -38,10 +38,21 @@ export const ROUTES = {
   HOME: '/',
   LOGIN: '/auth/login',
   REGISTER: '/auth/register',
+  
+  MEMBER: {
+    ROOT: '/member',
+    DASHBOARD: '/member/dashboard',
+    PROFILE: '/member/profile',
+    BOOKINGS: {
+      ROOT: '/member/bookings',
+      NEW: '/member/bookings/new',
+      HISTORY: '/member/bookings/history',
+    },
+  },
+  
   ADMIN: {
     ROOT: '/admin',
     DASHBOARD: '/admin',
-    // User Management
     USERS: {
       ROOT: '/admin/users',
       LIST: '/admin/users/list',
@@ -49,7 +60,6 @@ export const ROUTES = {
       ACTIVITY: '/admin/users/activity',
       MEMBERSHIPS: '/admin/users/memberships',
     },
-    // Booking Management
     BOOKINGS: {
       ROOT: '/admin/bookings',
       LIST: '/admin/bookings',
@@ -57,7 +67,6 @@ export const ROUTES = {
       PENDING: '/admin/bookings/pending',
       HISTORY: '/admin/bookings/history',
     },
-    // Fleet Management
     FLEET: {
       ROOT: '/admin/fleet',
       LIST: '/admin/fleet',
@@ -65,31 +74,31 @@ export const ROUTES = {
       SCHEDULE: '/admin/fleet/schedule',
       ROUTES: '/admin/fleet/routes',
     },
-    // Content Management
+    REPORTS: {
+      ROOT: '/admin/reports',
+      ANALYTICS: '/admin/reports/analytics',
+      FLEET: '/admin/reports/fleet',
+      BOOKINGS: '/admin/reports/bookings',
+      CUSTOMERS: '/admin/reports/customers',
+      FINANCIAL: '/admin/reports/financial',
+      FLIGHTS: '/admin/reports/flights',
+      MAINTENANCE: '/admin/reports/maintenance'
+    },
+    SETTINGS: {
+      ROOT: '/admin/settings',
+      NOTIFICATIONS: '/admin/settings/notifications',
+      SECURITY: '/admin/settings/security',
+      LOGS: '/admin/settings/logs',
+      PERFORMANCE: '/admin/settings/performance'
+    },
     CONTENT: {
       ROOT: '/admin/content',
       MEMBERSHIPS: '/admin/content/memberships',
       ROUTES: '/admin/content/routes',
       PRICING: '/admin/content/pricing',
-      SERVICES: '/admin/content/services',
+      SERVICES: '/admin/content/services'
     },
-    // System Settings
-    SETTINGS: {
-      ROOT: '/admin/settings',
-      GENERAL: '/admin/settings',
-      NOTIFICATIONS: '/admin/settings/notifications',
-      SECURITY: '/admin/settings/security',
-      LOGS: '/admin/settings/logs',
-      PERFORMANCE: '/admin/settings/performance',
-    },
-    // Reports
-    REPORTS: {
-      ROOT: '/admin/reports',
-      FLIGHTS: '/admin/reports/flights',
-      FINANCIAL: '/admin/reports/financial',
-      MAINTENANCE: '/admin/reports/maintenance',
-      ANALYTICS: '/admin/reports/analytics',
-    },
+    ANALYTICS: '/admin/analytics',
   },
 } as const;
 

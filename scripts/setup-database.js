@@ -1,159 +1,92 @@
-import { createClient } from '@supabase/supabase-js';
-import dotenv from 'dotenv';
+const mysql = require('mysql2/promise');
+const dotenv = require('dotenv');
+const path = require('path');
 
 // Load environment variables
-dotenv.config();
+dotenv.config({ path: path.resolve(__dirname, '../.env') });
 
-const supabaseUrl = process.env.VITE_SUPABASE_URL;
-const supabaseKey = process.env.VITE_SUPABASE_ANON_KEY;
-
-if (!supabaseUrl || !supabaseKey) {
-  console.error('Missing Supabase environment variables');
-  process.exit(1);
-}
-
-const supabase = createClient(supabaseUrl, supabaseKey);
-
-async function setupTestUsers() {
+async function setupDatabase() {
+  console.log('Setting up database for Better-Auth...');
+  
+  // Create database connection
+  const connection = await mysql.createConnection({
+    host: process.env.VITE_DB_HOST || 'localhost',
+    user: process.env.VITE_DB_USER || 'helo_admin',
+    password: process.env.VITE_DB_PASSWORD || 'ValoremPres1!',
+    multipleStatements: true,
+  });
+  
   try {
-    console.log('Setting up test users...');
-
-    // First check if roles exist
-    const { data: roles, error: rolesError } = await supabase
-      .from('roles')
-      .select('id, name');
-
-    if (rolesError) {
-      console.error('Error fetching roles:', rolesError);
-      console.error('Please make sure the migration has been applied first.');
-      process.exit(1);
+    // Create database if it doesn't exist
+    await connection.query(`CREATE DATABASE IF NOT EXISTS ${process.env.VITE_DB_NAME || 'helo_admin_app'}`);
+    console.log(`Database '${process.env.VITE_DB_NAME || 'helo_admin_app'}' created or already exists.`);
+    
+    // Use the database
+    await connection.query(`USE ${process.env.VITE_DB_NAME || 'helo_admin_app'}`);
+    
+    // Drop existing tables if they exist
+    try {
+      await connection.query(`
+        DROP TABLE IF EXISTS user_profiles;
+        DROP TABLE IF EXISTS login_attempts;
+        DROP TABLE IF EXISTS sessions;
+        DROP TABLE IF EXISTS users;
+      `);
+      console.log('Dropped existing tables.');
+    } catch (dropError) {
+      console.warn('Warning: Could not drop all tables:', dropError.message);
     }
-
-    if (roles.length === 0) {
-      console.error('No roles found in the database. Please run the migration first.');
-      process.exit(1);
-    }
-
-    console.log('Roles found:', roles.map(r => r.name).join(', '));
-
-    // Find role IDs
-    const adminRoleId = roles.find(r => r.name === 'admin')?.id;
-    const memberRoleId = roles.find(r => r.name === 'member')?.id;
-
-    if (!adminRoleId || !memberRoleId) {
-      console.error('Required roles not found. Please make sure "admin" and "member" roles exist.');
-      process.exit(1);
-    }
-
-    // Create admin user if it doesn't exist
-    await createUserIfNotExists(
-      'admin@helo.com', 
-      'admin123', 
-      'Admin User', 
-      adminRoleId, 
-      'Platinum'
-    );
-
-    // Create member user if it doesn't exist
-    await createUserIfNotExists(
-      'member@helo.com', 
-      'member123', 
-      'Test Member', 
-      memberRoleId, 
-      'Platinum'
-    );
-
-    console.log('Test users setup completed successfully');
+    
+    // Create users table
+    await connection.query(`
+      CREATE TABLE IF NOT EXISTS users (
+        id VARCHAR(36) PRIMARY KEY,
+        email VARCHAR(255) UNIQUE NOT NULL,
+        password VARCHAR(255) NOT NULL,
+        firstName VARCHAR(255),
+        lastName VARCHAR(255),
+        name VARCHAR(255),
+        role VARCHAR(50) DEFAULT 'member',
+        isActive BOOLEAN DEFAULT TRUE,
+        createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        lastLoginAt TIMESTAMP NULL
+      )
+    `);
+    console.log('Users table created or already exists.');
+    
+    // Create sessions table
+    await connection.query(`
+      CREATE TABLE IF NOT EXISTS sessions (
+        id VARCHAR(36) PRIMARY KEY,
+        userId VARCHAR(36) NOT NULL,
+        token TEXT NOT NULL,
+        expiresAt TIMESTAMP NOT NULL,
+        createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (userId) REFERENCES users(id) ON DELETE CASCADE
+      )
+    `);
+    console.log('Sessions table created or already exists.');
+    
+    // Create login_attempts table
+    await connection.query(`
+      CREATE TABLE IF NOT EXISTS login_attempts (
+        id VARCHAR(36) PRIMARY KEY,
+        userId VARCHAR(36) NOT NULL,
+        ipAddress VARCHAR(45) NOT NULL,
+        userAgent TEXT,
+        createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (userId) REFERENCES users(id) ON DELETE CASCADE
+      )
+    `);
+    console.log('Login attempts table created or already exists.');
+    
+    console.log('Database setup completed successfully!');
   } catch (error) {
-    console.error('Error setting up test users:', error);
-    process.exit(1);
+    console.error('Error setting up database:', error);
+  } finally {
+    await connection.end();
   }
 }
 
-async function createUserIfNotExists(email, password, fullName, roleId, membershipTier) {
-  try {
-    console.log(`Setting up user: ${email}...`);
-
-    // Check if user already exists
-    const { data: { user: existingUser }, error: getUserError } = await supabase.auth.admin
-      .getUserByEmail(email)
-      .catch(() => ({ data: { user: null }, error: null }));
-
-    if (existingUser) {
-      console.log(`User ${email} already exists with ID: ${existingUser.id}`);
-      
-      // Check if profile exists
-      const { data: profile, error: profileError } = await supabase
-        .from('user_profiles')
-        .select('*')
-        .eq('id', existingUser.id)
-        .single();
-      
-      if (profileError && profileError.code !== 'PGRST116') {
-        // Create profile if it doesn't exist
-        const { error: insertProfileError } = await supabase
-          .from('user_profiles')
-          .insert({
-            id: existingUser.id,
-            role_id: roleId,
-            full_name: fullName,
-            membership_tier: membershipTier,
-            status: 'active'
-          });
-        
-        if (insertProfileError) {
-          console.error(`Error creating profile for existing user ${email}:`, insertProfileError);
-        } else {
-          console.log(`Created profile for existing user ${email}`);
-        }
-      } else {
-        console.log(`Profile for ${email} already exists`);
-      }
-      
-      return existingUser;
-    }
-
-    // Create new user
-    const { data: { user }, error: createUserError } = await supabase.auth
-      .signUp({
-        email,
-        password,
-        options: {
-          data: {
-            full_name: fullName
-          }
-        }
-      });
-
-    if (createUserError || !user) {
-      console.error(`Error creating user ${email}:`, createUserError);
-      return null;
-    }
-
-    console.log(`Created user ${email} with ID: ${user.id}`);
-
-    // Create user profile
-    const { error: profileError } = await supabase
-      .from('user_profiles')
-      .insert({
-        id: user.id,
-        role_id: roleId,
-        full_name: fullName,
-        membership_tier: membershipTier,
-        status: 'active'
-      });
-
-    if (profileError) {
-      console.error(`Error creating profile for ${email}:`, profileError);
-    } else {
-      console.log(`Created profile for ${email}`);
-    }
-
-    return user;
-  } catch (error) {
-    console.error(`Error in create user flow for ${email}:`, error);
-    return null;
-  }
-}
-
-setupTestUsers();
+setupDatabase();

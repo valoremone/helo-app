@@ -1,59 +1,35 @@
-import { useState } from 'react';
-import { Booking } from '@/types/admin';
-import { BookingCalendar } from '@/components/calendar/booking-calendar';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from '@/components/ui/tabs';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
-import {
-  MoreHorizontal,
-  Search,
-  Calendar,
-  Clock,
-  MapPin,
-  Users,
-  List,
-} from 'lucide-react';
 import { format } from 'date-fns';
+import { Calendar } from 'lucide-react';
+import { Clock } from 'lucide-react';
+import { List } from 'lucide-react';
+import { MapPin } from 'lucide-react';
+import { MoreHorizontal } from 'lucide-react';
+import { Search } from 'lucide-react';
+import { Users } from 'lucide-react';
+import { useState } from 'react';
 import { toast } from 'sonner';
-
-// Temporary mock data
-const mockBookings: Booking[] = [
-  {
-    id: '1',
-    userId: '1',
-    aircraftId: 'AC001',
-    status: 'pending',
-    departureLocation: 'LAX',
-    arrivalLocation: 'SFO',
-    departureTime: '2024-03-15T10:00:00Z',
-    arrivalTime: '2024-03-15T11:30:00Z',
-    passengers: 4,
-    specialRequests: 'Vegetarian meals',
-    createdAt: '2024-03-01T00:00:00Z',
-    updatedAt: '2024-03-01T00:00:00Z',
-  },
-  // Add more mock bookings as needed
-];
+import { BookingCalendar } from '@/components/calendar/booking-calendar';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { DropdownMenu } from '@/components/ui/dropdown-menu';
+import { DropdownMenuContent } from '@/components/ui/dropdown-menu';
+import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
+import { DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Input } from '@/components/ui/input';
+import { Table } from '@/components/ui/table';
+import { TableBody } from '@/components/ui/table';
+import { TableCell } from '@/components/ui/table';
+import { TableHead } from '@/components/ui/table';
+import { TableHeader } from '@/components/ui/table';
+import { TableRow } from '@/components/ui/table';
+import { Tabs } from '@/components/ui/tabs';
+import { TabsContent } from '@/components/ui/tabs';
+import { TabsList } from '@/components/ui/tabs';
+import { TabsTrigger } from '@/components/ui/tabs';
+import { mockBookings } from '@/lib/mock-data';
+import { Booking } from '@/types/bookings';
+import { BookingStatus } from '@/types/bookings';
+import { BookingCalendarEvent } from '@/components/placeholder-calendar';
 
 export function BookingsPage() {
   const [bookings, setBookings] = useState<Booking[]>(mockBookings);
@@ -61,8 +37,8 @@ export function BookingsPage() {
   const [view, setView] = useState<'list' | 'calendar'>('list');
 
   const filteredBookings = bookings.filter(booking => 
-    booking.departureLocation.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    booking.arrivalLocation.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    booking.departure.location.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    booking.arrival.location.toLowerCase().includes(searchQuery.toLowerCase()) ||
     booking.id.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
@@ -91,6 +67,22 @@ export function BookingsPage() {
   const handleBookingClick = (booking: Booking) => {
     // In a real application, this would navigate to a detailed view
     console.log('Booking clicked:', booking);
+  };
+
+  // Add a function to convert bookings to calendar events
+  const bookingsToEvents = (bookings: Booking[]): BookingCalendarEvent[] => {
+    return bookings.map(booking => ({
+      id: booking.id,
+      title: `${booking.customerName} - ${booking.type}`,
+      start: new Date(booking.departure.time),
+      end: new Date(booking.arrival.time),
+      status: booking.status === 'in-progress' ? 'confirmed' : 
+              (booking.status === 'completed' ? 'confirmed' : booking.status),
+      customer: booking.customerName,
+      aircraft: booking.aircraftName || 'Unknown',
+      resourceId: booking.aircraftId,
+      type: booking.type
+    }));
   };
 
   return (
@@ -145,29 +137,27 @@ export function BookingsPage() {
               <TableBody>
                 {filteredBookings.map((booking) => (
                   <TableRow key={booking.id}>
-                    <TableCell className="font-mono">{booking.id}</TableCell>
+                    <TableCell className="font-medium">{booking.id}</TableCell>
+                    <TableCell>{booking.customerName}</TableCell>
                     <TableCell>
                       <div className="flex items-center gap-1">
-                        <MapPin className="h-4 w-4" />
-                        {booking.departureLocation} → {booking.arrivalLocation}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="space-y-1">
-                        <div className="flex items-center gap-1">
-                          <Calendar className="h-4 w-4" />
-                          {format(new Date(booking.departureTime), 'MMM d, yyyy')}
-                        </div>
-                        <div className="flex items-center gap-1 text-muted-foreground">
-                          <Clock className="h-4 w-4" />
-                          {format(new Date(booking.departureTime), 'HH:mm')} - 
-                          {format(new Date(booking.arrivalTime), 'HH:mm')}
-                        </div>
+                        <MapPin className="h-3 w-3 text-muted-foreground" />
+                        {booking.departure.location} → {booking.arrival.location}
                       </div>
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-1">
-                        <Users className="h-4 w-4" />
+                        <Clock className="h-3 w-3 text-muted-foreground" />
+                        {format(new Date(booking.departure.time), 'PPP')}
+                      </div>
+                      <div className="text-xs text-muted-foreground">
+                        {format(new Date(booking.departure.time), 'p')} - 
+                        {format(new Date(booking.arrival.time), 'p')}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-1">
+                        <Users className="h-3 w-3 text-muted-foreground" />
                         {booking.passengers}
                       </div>
                     </TableCell>
@@ -177,31 +167,31 @@ export function BookingsPage() {
                       </Badge>
                     </TableCell>
                     <TableCell>
-                      {booking.specialRequests || '-'}
+                      {booking.notes || '-'}
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="text-right">
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button variant="ghost" className="h-8 w-8 p-0">
+                            <span className="sr-only">Open menu</span>
                             <MoreHorizontal className="h-4 w-4" />
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                          <DropdownMenuItem
-                            onClick={() => handleStatusChange(booking.id, 'confirmed')}
-                          >
-                            Confirm Booking
+                          <DropdownMenuItem onClick={() => handleBookingClick(booking)}>
+                            View details
                           </DropdownMenuItem>
-                          <DropdownMenuItem
-                            onClick={() => handleStatusChange(booking.id, 'completed')}
+                          <DropdownMenuItem 
+                            onClick={() => handleStatusChange(booking.id, 'confirmed' as BookingStatus)}
+                            disabled={booking.status === 'confirmed'}
                           >
-                            Mark as Completed
+                            Confirm
                           </DropdownMenuItem>
-                          <DropdownMenuItem
-                            onClick={() => handleStatusChange(booking.id, 'cancelled')}
-                            className="text-red-600"
+                          <DropdownMenuItem 
+                            onClick={() => handleStatusChange(booking.id, 'cancelled' as BookingStatus)}
+                            disabled={booking.status === 'cancelled'}
                           >
-                            Cancel Booking
+                            Cancel
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
@@ -215,11 +205,75 @@ export function BookingsPage() {
 
         <TabsContent value="calendar" className="mt-4">
           <BookingCalendar
-            bookings={filteredBookings}
-            onBookingClick={handleBookingClick}
+            events={bookingsToEvents(filteredBookings)}
+            onSelectEvent={(event) => {
+              const booking = bookings.find(b => b.id === event.id);
+              if (booking) handleBookingClick(booking);
+            }}
           />
         </TabsContent>
       </Tabs>
+
+      <div className="mt-4">
+        {filteredBookings.map((booking) => (
+          <div key={booking.id} className="mt-4">
+            <div className="text-sm font-medium">Booking Details</div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <div className="text-sm font-medium">Customer</div>
+                <div>{booking.customerName}</div>
+                <div className="text-sm text-muted-foreground">
+                  {booking.customerEmail}
+                </div>
+              </div>
+              <div>
+                <div className="text-sm font-medium">Flight</div>
+                <div>{booking.type}</div>
+                <div className="text-sm text-muted-foreground">
+                  {booking.passengers} passengers
+                </div>
+              </div>
+              <div>
+                <div className="text-sm font-medium">Departure</div>
+                <div>{booking.departure.location}</div>
+                <div className="text-sm text-muted-foreground">
+                  {format(new Date(booking.departure.time), 'PPP p')}
+                </div>
+              </div>
+              <div>
+                <div className="text-sm font-medium">Arrival</div>
+                <div>{booking.arrival.location}</div>
+                <div className="text-sm text-muted-foreground">
+                  {format(new Date(booking.arrival.time), 'PPP p')}
+                </div>
+              </div>
+              <div>
+                <div className="text-sm font-medium">Price</div>
+                <div>
+                  ${booking.price.toLocaleString()}
+                </div>
+                <div className="text-sm text-muted-foreground">
+                  {booking.paymentStatus}
+                </div>
+              </div>
+              <div>
+                <div className="text-sm font-medium">Status</div>
+                <Badge className={getStatusColor(booking.status)}>
+                  {booking.status}
+                </Badge>
+              </div>
+            </div>
+            {booking.notes && (
+              <div className="mt-4">
+                <div className="text-sm font-medium">Notes</div>
+                <div className="text-sm text-muted-foreground">
+                  {booking.notes}
+                </div>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
     </div>
   );
-} 
+}

@@ -1,131 +1,103 @@
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useDispatch } from 'react-redux';
+import { useSelector } from 'react-redux';
+import { useState } from 'react';
+import { toast } from 'sonner';
+import { authService } from '@/lib/auth/service';
+import { RootState } from '@/store';
+import { setCredentials } from '@/store/slices/auth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Badge } from '@/components/ui/badge';
-import { MEMBERSHIP_TIERS } from '@/lib/constants';
-import { useSelector } from 'react-redux';
-import { RootState } from '@/store';
-import { useState } from 'react';
-import { updateProfile } from '@/lib/local-auth';
-import { toast } from 'sonner';
-import { useDispatch } from 'react-redux';
-import { setUser } from '@/store/slices/auth';
 
-export function ProfilePage() {
-  const { user } = useSelector((state: RootState) => state.auth);
+export default function ProfilePage() {
   const dispatch = useDispatch();
-  
+  const { user, token } = useSelector((state: RootState) => state.auth);
+  const [isEditing, setIsEditing] = useState(false);
   const [name, setName] = useState(user?.name || '');
   const [email, setEmail] = useState(user?.email || '');
-  const [phone, setPhone] = useState('+1 (555) 000-0000');
-  const [location, setLocation] = useState('Los Angeles, CA');
-  const [isUpdating, setIsUpdating] = useState(false);
-  
-  if (!user) return null;
-  
-  const handleUpdateProfile = async () => {
+
+  const handleUpdateProfile = async (e: React.FormEvent) => {
+    e.preventDefault();
     try {
-      setIsUpdating(true);
-      
-      const updatedUser = await updateProfile(user.id, {
+      const updatedUser = await authService.updateProfile({
         name,
-        // membership tier stays the same
+        email,
       });
       
-      if (updatedUser) {
-        dispatch(setUser(updatedUser));
-        toast.success('Profile updated successfully');
-      }
-    } catch (error: any) {
-      toast.error('Failed to update profile', {
-        description: error.message
-      });
-    } finally {
-      setIsUpdating(false);
+      dispatch(setCredentials({ 
+        user: updatedUser,
+        token: token || ''
+      }));
+      setIsEditing(false);
+      toast.success('Profile updated successfully');
+    } catch (error) {
+      toast.error('Failed to update profile');
     }
   };
 
+  if (!user) {
+    return <div>Loading...</div>;
+  }
+
   return (
-    <div className="space-y-8">
-      <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold">Profile</h1>
-        <Badge variant="secondary">{user.membershipTier}</Badge>
-      </div>
+    <div className="max-w-2xl mx-auto p-6">
+      <h1 className="text-2xl font-bold mb-6">Profile</h1>
+      
+      <form onSubmit={handleUpdateProfile} className="space-y-4">
+        <div>
+          <Label htmlFor="name">Name</Label>
+          {isEditing ? (
+            <Input
+              id="name"
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="mt-1"
+            />
+          ) : (
+            <p className="mt-1 text-gray-900">{user.name}</p>
+          )}
+        </div>
 
-      <div className="grid gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>Personal Information</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid gap-4 md:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor="name">Full Name</Label>
-                <Input 
-                  id="name" 
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input 
-                  id="email" 
-                  type="email" 
-                  value={email}
-                  disabled
-                  className="bg-muted cursor-not-allowed opacity-70"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="phone">Phone</Label>
-                <Input 
-                  id="phone" 
-                  type="tel" 
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="location">Location</Label>
-                <Input 
-                  id="location" 
-                  value={location}
-                  onChange={(e) => setLocation(e.target.value)}
-                />
-              </div>
-            </div>
-            <Button onClick={handleUpdateProfile} disabled={isUpdating}>
-              {isUpdating ? 'Saving Changes...' : 'Save Changes'}
+        <div>
+          <Label htmlFor="email">Email</Label>
+          {isEditing ? (
+            <Input
+              id="email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="mt-1"
+            />
+          ) : (
+            <p className="mt-1 text-gray-900">{user.email}</p>
+          )}
+        </div>
+
+        <div className="flex space-x-4">
+          {isEditing ? (
+            <>
+              <Button type="submit">
+                Save Changes
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setIsEditing(false)}
+              >
+                Cancel
+              </Button>
+            </>
+          ) : (
+            <Button
+              type="button"
+              onClick={() => setIsEditing(true)}
+            >
+              Edit Profile
             </Button>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Membership Details</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid gap-4">
-              <div className="flex justify-between py-2 border-b">
-                <span className="text-muted-foreground">Member Since</span>
-                <span className="font-medium">January 2025</span>
-              </div>
-              <div className="flex justify-between py-2 border-b">
-                <span className="text-muted-foreground">Membership Level</span>
-                <span className="font-medium">{user.membershipTier}</span>
-              </div>
-              <div className="flex justify-between py-2">
-                <span className="text-muted-foreground">Points Balance</span>
-                <span className="font-medium">
-                  {user.role === 'admin' ? '250,000' : '125,000'}
-                </span>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+          )}
+        </div>
+      </form>
     </div>
   );
 }

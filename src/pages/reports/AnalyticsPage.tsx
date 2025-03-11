@@ -1,38 +1,28 @@
+import { Calendar } from 'lucide-react';
+import { DollarSign } from 'lucide-react';
+import { Percent } from 'lucide-react';
+import { TrendingDown } from 'lucide-react';
+import { TrendingUp } from 'lucide-react';
 import { useState } from 'react';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-} from 'recharts';
-import {
-  TrendingUp,
-  TrendingDown,
-  DollarSign,
-  Calendar,
-  Users,
-  Percent,
-} from 'lucide-react';
-import type { AnalyticsData } from '@/types/reports';
-
+import { CartesianGrid } from 'recharts';
+import { Legend } from 'recharts';
+import { Line } from 'recharts';
+import { LineChart } from 'recharts';
+import { ResponsiveContainer } from 'recharts';
+import { Tooltip } from 'recharts';
+import { XAxis } from 'recharts';
+import { YAxis } from 'recharts';
+import { Card } from '@/components/ui/card';
+import { CardContent } from '@/components/ui/card';
+import { CardDescription } from '@/components/ui/card';
+import { CardHeader } from '@/components/ui/card';
+import { CardTitle } from '@/components/ui/card';
+import { Select } from '@/components/ui/select';
+import { SelectContent } from '@/components/ui/select';
+import { SelectItem } from '@/components/ui/select';
+import { SelectTrigger } from '@/components/ui/select';
+import { SelectValue } from '@/components/ui/select';
+import { AnalyticsData } from '@/types/reports';
 // Mock data
 const mockAnalytics: AnalyticsData = {
   timeRange: 'month',
@@ -265,4 +255,4 @@ export default function AnalyticsPage() {
       </div>
     </div>
   );
-} 
+}
